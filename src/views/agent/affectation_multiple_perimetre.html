@@ -1,0 +1,11 @@
+<select class="form-control"
+        ng-if="cookieStore.get('status') !== 'Agent'"
+        ng-model="perimetreAffect[$index]"
+        ng-options="agent.cp as agent.nomPrenom for agent in Fiches.Agents"
+        ng-change="AffectationMultiple(inters, perimetreAffect[$index])"></select>
+
+<select class="form-control"
+        ng-if="cookieStore.get('status') === 'Agent'"
+        ng-model="perimetreAffect[$index]"
+        ng-options="agent.cp as agent.nomPrenom for agent in Fiches.AgentsAgent"
+        ng-change="AffectationMultiple(inters, perimetreAffect[$index])"></select>

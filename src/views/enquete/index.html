@@ -1,0 +1,79 @@
+<h1 class="text-center">
+    <a ng-href="#/enquete/{{routeParams.annee-1}}"
+       class="h1">&laquo;</a>
+    Enquête satisfaction client {{routeParams.annee}}
+    <a ng-href="#/enquete/{{routeParams.annee-1+2}}"
+       class="h1">&raquo;</a>
+</h1>
+
+<div  style="position: relative;" class="col-md-8 col-md-offset-2">
+    <table class="table no-margin">
+        <thead class="violet">
+            <tr>
+                <th></th>
+                <th class="text-center">Moyenne</th>
+                <th ng-controller="EnqueteQuestions" ng-repeat="entete in enquetectrl.table.datas.agence track by $index"
+                    ng-if="$index < enquetectrl.table.datas.colNumber-1"
+                    title="{{ questionenquete.datas.questions.Questions[$index].Libelle }}"
+                    class="text-center">Question {{$index+1}}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <th>Agence ASTI</th>
+                <th width="{{100/(1+enquetectrl.table.datas.agence.length)}}%"
+                    ng-repeat="note in enquetectrl.table.datas.agence track by $index"
+                    ng-if="$index < enquetectrl.table.datas.colNumber"
+                    class="text-center"
+                    ng-class="{ success: note>=4, danger: note<3, warning: note>=3 && note <4 }">{{note}}</th>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="table no-margin" ng-repeat="body in enquetectrl.table.datas.secteurs">
+        <tbody>
+            <tr>
+                <th>
+                    <span style="cursor:pointer;" data-toggle="collapse" data-target="#collapseSecteur{{$index}}"
+                          aria-expanded="false" aria-controls="collapseSecteur{{$index}}">{{body.secteur.nom}}</span>
+                </th>
+                <th width="{{100/(1+body.secteur.notation.length)}}%" ng-repeat="note in body.secteur.notation track by $index"
+                    ng-if="$index < enquetectrl.table.datas.colNumber"
+                    class="text-center"
+                    ng-class="{ success: note>=4, danger: note<3, warning: note>=3 && note <4 }">{{note}}</th>
+            </tr>
+        </tbody>
+
+        <tbody class="collapse fade" id="collapseSecteur{{$index}}">
+            <tr ng-repeat="agent in body.agents">
+                <td>{{agent.nomPrenom}}</td>
+                <td ng-repeat="note in agent.notation track by $index"
+                    ng-if="$index < enquetectrl.table.datas.colNumber"
+                    class="text-center"
+                    ng-class="{ success: note>=4, danger: note<3, warning: note>=3 && note <4 }">{{note}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p ng-if="enquetectrl.table.datas.colNumber <= 0" ng-class="{ annee : routeParams.annee}">Aucune enquête satisfaction trouvée pour l'année {{annee}} actuellement.</p>
+
+    <fieldset style="margin-top: 50px" ng-controller="EnqueteCommentaire">
+        <legend>Détail :</legend>
+        <p class="h5">Nombre total d'enquêtes envoyées : {{enquetecommentaire.datas.fiche.NombreTotal}}</p>
+        <p class="h5">Nombre total d'enquêtes répondues : {{enquetecommentaire.datas.fiche.NombreRepondu}} ({{enquetecommentaire.datas.fiche.NombreRepondu * 100 / enquetecommentaire.datas.fiche.NombreTotal | number:1}}%)</p>
+        <p class="h5">Nombre total d'enquêtes répondues et notées : {{enquetecommentaire.datas.fiche.NombreRepondu - enquetecommentaire.datas.fiche.NombreNonRenseigne}} ({{(enquetecommentaire.datas.fiche.NombreRepondu - enquetecommentaire.datas.fiche.NombreNonRenseigne) * 100 / enquetecommentaire.datas.fiche.NombreRepondu | number:1}}%)</p>
+        <br/>
+        <!--<p ng-repeat="entete in enquetectrl.table.datas.agence track by $index"-->
+        <!--ng-if="$index < enquetectrl.table.datas.colNumber-1">-->
+        <!--<b>Question {{$index+1}}:</b> Blabla blablabla blabla, blabla blablabla ?-->
+        <!--</p>-->
+    </fieldset>
+
+    <legend>Nombre d'avis utilisateur pour une note inférieure ou égale à 2 :</legend>
+
+    <div ng-controller="EnqueteCommentaire">
+        <p class="h5" ng-repeat="commentaire in enquetecommentaire.datas.fiche.Commentaires">{{commentaire.nombre + " : " + commentaire.libelle}}</p>
+    </div>
+
+</div>

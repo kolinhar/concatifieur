@@ -1,0 +1,29 @@
+<article class="modal-dialog">
+
+    <div class="modal-content">
+
+        <header class="modal-header">
+            <button type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="text-danger text-center">
+                Change Log du {{changeLog.date |date:"dd MMMM yyyy"}}
+            </h4>
+        </header>
+
+        <div class="modal-body">
+            <div marked="changeLog.description">
+            </div>
+        </div>
+
+        <footer class="modal-footer">
+            <button class="btn btn-default"
+                    data-dismiss="modal">Fermer
+            </button>
+        </footer>
+    </div>
+
+</article>

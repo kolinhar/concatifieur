@@ -1,0 +1,106 @@
+<div class="modal fade"
+     tabindex="-1"
+     role="dialog"
+     id="modal-pointage">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button class="close"
+                        data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h3 class="modal-title text-center">Modifier un pointage</h3>
+            </div>
+            
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+
+                        <div class="col-md-12"
+                             ng-if="modal.fiche === false">
+                            <p class="form-group"
+                               ng-class="{'has-error': modal.errProj}">
+                                <label class="control-label">Projet :</label>
+                                <span class="input-group">
+                                    <angucomplete-alt
+                                        id="projectAutocompleteInput2"
+                                        input-class="form-control angucomplete-decale"
+                                        initial-value="{{modal.selectedProject}}"
+                                        selected-object="modal.selectedProject"
+                                        title-field="intitule"
+                                        search-fields="intitule"
+                                        local-data="ficheagadir.Projects.list"
+                                        pause="0"
+                                        match-class="bold"
+                                        minlength="1"
+                                        text-no-results="Aucun résultat"
+                                        text-searching="Recherche en cours..."
+                                        template-url="views/ficheAgadir/ProjetAutocomplete.html"
+                                        required></angucomplete-alt>
+                                     <span class="input-group-btn"
+                                          title="Liste des projets">
+                                        <button class="btn btn-default"
+                                                data-toggle="modal"
+                                                data-target="#ProjetsModal">
+                                            <span class="glyphicon glyphicon-list"></span>
+                                        </button>
+                                    </span>
+                                </span>
+                            </p>
+                        </div>
+
+                        <div class="col-md-12">
+                            <p class="form-group"
+                               ng-class="{'has-error': modal.errDesc}">
+                                <label class="control-label">Travail réalisé :</label>
+                                <textarea rows="8"
+                                          class="form-control"
+                                          maxlength="1000"
+                                          ng-model="modal.nature"
+                                          required></textarea>
+                            </p>
+                        </div>
+
+                        <div class="col-md-5 col-md-offset-1">
+                            <p class="form-group"
+                               ng-class="{'has-error': modal.errDuree}">
+                                <label class="control-label">Durée (en minutes) :</label>
+                                <input type="number"
+                                       min="3"
+                                       max="465"
+                                       step="3"
+                                       class="form-control"
+                                       ng-model="modal.dureeMinute"
+                                       ng-dblclick="(modal.nFiche === undefined ? modal.dureeMinute = 465 : return)"
+                                       required/>
+                            </p>
+                        </div>
+
+                        <div class="col-md-5">
+                            <p class="form-group"
+                               ng-class="{'has-error': modal.errDate}">
+                                <label class="control-label">Date :</label>
+                                <input type="text"
+                                       id="datetimepicker2"
+                                       class="form-control datepicker"
+                                       placeholder="JJ/MM/AAAA"
+                                       ng-model="modal.date"
+                                       pick-a-date="date"
+                                       pick-a-date-options="{ format: 'dd/mm/yyyy' }"
+                                       required/>
+                            </p>
+                        </div>
+
+                        <div class="col-md-12 text-center">
+                            <button class="btn btn-blue"
+                                    ng-click="ficheagadir.UpdPointage()">Modifier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

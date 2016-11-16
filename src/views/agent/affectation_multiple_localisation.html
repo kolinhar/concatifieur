@@ -1,0 +1,11 @@
+<select class="form-control"
+        ng-if="cookieStore.get('status') !== 'Agent'"
+        ng-model="localisationAffect[$index]"
+        ng-options="agent.cp as agent.nomPrenom for agent in Fiches.Agents"
+        ng-change="AffectationMultiple(inters, localisationAffect[$index])">
+
+</select><select class="form-control"
+        ng-if="cookieStore.get('status') === 'Agent'"
+        ng-model="localisationAffect[$index]"
+        ng-options="agent.cp as agent.nomPrenom for agent in Fiches.AgentsAgent"
+        ng-change="AffectationMultiple(inters, localisationAffect[$index])"></select>

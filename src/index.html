@@ -1,0 +1,172 @@
+<!doctype html>
+<html ng-app="ngAriane">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ariane</title>
+
+    <link rel="icon" type="image/png" href="images/rocket.png" sizes="64x64" />
+
+    <!--CONCATIFICATION-->
+    <link rel="stylesheet" href="styles/bootstrap.css" />
+    <link rel="stylesheet" href="styles/style-designer.css" />
+    <link rel="stylesheet" href="styles/angucomplete-alt.css" />
+    <link rel="stylesheet" href="styles/default.css" />
+    <link rel="stylesheet" href="styles/default.date.css" />
+    <link rel="stylesheet" href="styles/default.time.css" />
+    <link rel="stylesheet" href="styles/angular-material.min.css">
+    <link rel="stylesheet" href="styles/StyleSheet.css" />
+    <link rel="stylesheet" href="styles/leaflet.css" />
+    <link rel="stylesheet" href="styles/leaflet.label.css" />
+    <link rel="stylesheet" href="styles/MarkerCluster.css" />
+
+    <script src="scripts/Adependances/jquery.js"></script>
+    <script src="scripts/Adependances/angular.js"></script>
+    <script src="scripts/Adependances/leaflet.js"></script>
+    <script src="scripts/Adependances/angular-leaflet-directive.min.js"></script>
+    <script src="scripts/Adependances/leaflet.label.js"></script>
+    <script src="scripts/Adependances/leaflet.markercluster.js"></script>
+
+    <script src="scripts/Adependances/angular-animate.min.js"></script>
+    <script src="scripts/Adependances/angular-locale_fr-fr.js"></script>
+    <script src="scripts/Adependances/angular-route.js"></script>
+    <script src="scripts/Adependances/angular-cookies.js"></script>
+    <script src="scripts/Adependances/angular-touch.js"></script>
+    <script src="scripts/Adependances/bootstrap.js"></script>
+    <script src="scripts/Adependances/angucomplete-alt.js"></script>
+    <script src="scripts/Adependances/angular-datepicker.js"></script>
+    <script src="scripts/Adependances/highcharts.js"></script>
+    <script src="scripts/Adependances/angular-sanitize.min.js"></script>
+    <script src="scripts/Adependances/marked.js"></script>
+    <script src="scripts/Adependances/angular-marked.min.js"></script>
+    <script src="scripts/Adependances/notify.js"></script>
+
+    <script src="scripts/Adependances/angular-material.min.js"></script>
+    <script src="scripts/Adependances/jquery-ui.js"></script>
+    <script src="scripts/Adependances/jqAutocomplete.js"></script>
+    <script src="scripts/Adependances/FctBase.js"></script>
+    <script src="scripts/Adependances/app.js"></script>
+    <!--/CONCATIFICATION-->
+</head>
+
+<body class="flexbox">
+    <aside ng-controller="menuNav" class="menu-gauche closed hidden-print" ng-class="{closed: menunav.hide}" ng-include="'views/menuNav.html'"></aside>
+
+    <input type="hidden" ng-controller="Auth" />
+    <input type="hidden" ng-controller="SignalRBroadcaster" />
+    <input type="hidden" ng-controller="ProjetsListe" />
+    <input type="hidden" ng-controller="EtatsListe" />
+    <input type="hidden" ng-controller="Agents" />
+
+    <section class="partie-droite">
+        <nav id="box-views" class="dropdown hidden-print" ng-controller="Notifications" ng-include="'views/notification/barre_top.html'"></nav>
+
+        <section class="container-fluid main-container nav-top-75" ng-view style="position: relative"></section>
+
+        <footer ng-include="'views/footer.html'"></footer>
+    </section>
+
+    <section ng-controller="ErrorModal" class="modal fade" tabindex="-1" id="ErrorModal">
+        <div ng-include="'views/ErrorModal.html'"></div>
+    </section>
+
+    <section ng-controller="VerrouillageDjsModal" class="modal fade" tabindex="-1" role="dialog" id="modal-verrouillage-djs">
+        <div ng-include="'views/djs/modalVerrouillageDjs.html'"></div>
+    </section>
+
+    <section ng-controller="VerrouillageDjsModal" class="modal fade" tabindex="-1" role="dialog" id="modal-multiple-verrouillage-djs">
+        <div ng-include="'views/djs/modalMultipleVerrouillageDjs.html'"></div>
+    </section>
+
+    <section ng-controller="ChangeLog" class="modal fade" tabindex="-1" role="dialog" id="modal-changeLog">
+        <div ng-include="'views/changeLogModal.html'"></div>
+    </section>
+
+    <section ng-controller="DjsManager" class="modal fade" tabindex="-1" id="DjsModal">
+        <div ng-include="'views/djs/modalDjs.html'"></div>
+    </section>
+
+    <section ng-controller="ModalProjets" class="modal fade" tabindex="-1" id="ProjetsModal">
+        <div ng-include="'views/projet/modalProjets.html'"></div>
+    </section>
+
+    <section class="modal fade" tabindex="-1" id="AffairesModal">
+        <div ng-include="'views/affaire/modalAffaires.html'"></div>
+    </section>
+
+    <script src="http://comet.ariane.st.sncf.fr/Scripts/jquery.signalR-2.2.0.min.js"></script>
+    <script src="http://comet.ariane.st.sncf.fr/signalr/hubs" type="text/javascript"></script>
+
+
+<!--
+    PROD-->
+
+    <script src="http://x18srhrgcb7:8044/cartographie/factories.js"></script>
+    <script src="http://x18srhrgcb7:8044/cartographie/services.js"></script>
+    <script src="http://x18srhrgcb7:8044/cartographie/cartographie.js"></script>
+<!--
+    LOCAL
+
+    <script src="scripts/factories/carto/factories.js"></script>
+    <script src="scripts/services/carto/services.js"></script>
+    <script src="scripts/controllers/carto/cartographie.js"></script>-->
+
+    <!--CONCATIFICATION-->
+    <script src="scripts/directives/affectation/ar-affectation.js"></script>
+    <script src="scripts/providers/providers.js"></script>
+    <script src="scripts/values/values.js"></script>
+    <script src="scripts/values/ficheAgadir/values.js"></script>
+    <script src="scripts/filters/filters.js"></script>
+    <script src="scripts/factories/ficheAgadir/factories.js"></script>
+    <script src="scripts/factories/affaires/factories.js"></script>
+    <script src="scripts/factories/fiches/factories.js"></script>
+    <script src="scripts/factories/upload/factories.js"></script>
+    <script src="scripts/factories/DJS/factories.js"></script>
+    <script src="scripts/factories/notification/factories.js"></script>
+    <script src="scripts/factories/enquete/factories.js"></script>
+    <script src="scripts/factories/factories.js"></script>
+    <script src="scripts/factories/enqueteSatisfaction/factories.js"></script>
+    <script src="scripts/factories/AgadirDominator/factories.js"></script>
+    <script src="scripts/factories/agents/factories.js"></script>
+    <script src="scripts/services/services.js"></script>
+    <script src="scripts/services/djs/services.js"></script>
+    <script src="scripts/services/gestionFiches/services.js"></script>
+    <script src="scripts/services/ficheAgadir/services.js"></script>
+    <script src="scripts/services/listeFiches/services.js"></script>
+    <script src="scripts/services/affaire/services.js"></script>
+    <script src="scripts/services/nuitAstreinte/services.js"></script>
+    <script src="scripts/services/upload/services.js"></script>
+    <script src="scripts/services/projets/services.js"></script>
+    <script src="scripts/services/graph/services.js"></script>
+    <script src="scripts/services/notification/services.js"></script>
+    <script src="scripts/services/enquete/services.js"></script>
+    <script src="scripts/services/agents/services.js"></script>
+    <script src="scripts/controllers/listeFiches/controllers.js"></script>
+    <script src="scripts/controllers/gestionFiches/controllers.js"></script>
+    <script src="scripts/controllers/gestionProjets/controllers.js"></script>
+    <script src="scripts/controllers/controllers.js"></script>
+    <script src="scripts/controllers/ficheAgadir/controllers.js"></script>
+    <script src="scripts/controllers/pointageJournee/controllers.js"></script>
+    <script src="scripts/controllers/djs/controllers.js"></script>
+    <script src="scripts/controllers/projets/controllers.js"></script>
+    <script src="scripts/controllers/graph/controllers.js"></script>
+    <script src="scripts/controllers/affaire/controllers.js"></script>
+    <script src="scripts/controllers/nuit/controllers.js"></script>
+    <script src="scripts/controllers/astreinte/controllers.js"></script>
+    <script src="scripts/controllers/notification/controllers.js"></script>
+    <script src="scripts/controllers/enquete/controllers.js"></script>
+    <script src="scripts/controllers/upload/controllers.js"></script>
+
+    <link rel="stylesheet" href="styles/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="styles/jquery-ui.css" />
+    <link rel="stylesheet" href="styles/jquery-ui.structure.css" />
+
+    <script src="scripts/MongoDB/values.js"></script>
+    <script src="scripts/MongoDB/services.js"></script>
+    <script src="scripts/MongoDB/factories.js"></script>
+    <script src="scripts/Adependances/fr_FR.js"></script>
+    <!--/CONCATIFICATION-->
+</body>
+
+</html>

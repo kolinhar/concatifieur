@@ -1,0 +1,220 @@
+﻿.img-sncf>a{
+    margin: 0;
+}
+
+.hover{
+    display: block!important;
+}
+
+.notifications{
+    display: none;
+    position: fixed;
+    top: 51px;
+    width: 250px;
+    background-color: lightgrey;
+}
+
+.menuAgadir{
+    border: 1px solid black;
+}
+
+.bold{
+    font-weight: bold;
+}
+
+.text-barre{
+    text-decoration: line-through;
+}
+
+/*#####################################
+    SURCHARGE angucomplete-alt
+#####################################*/
+
+.angucomplete-decale+.angucomplete-dropdown{
+    margin-top: 42px;
+}
+
+/*#####################################
+    SURCHARGE DE BOOTSTRAP
+#####################################*/
+.notifications>.well{
+    margin-bottom: 0!important;
+}
+
+.glyph-perso{
+    top: -2px!important;
+}
+
+td, th{
+    word-wrap: break-word;
+}
+
+table.table-word-wrap{
+    table-layout: fixed;
+}
+
+.label-cloture{
+    background-color: black;
+}
+
+.label-cloture>a{
+    color: white;
+}
+
+.label-journee-valider{
+    background-color: green;
+}
+
+.label-journee-valider>a{
+    color: white;
+}
+
+.input-group-addon, .input-group-btn {
+    vertical-align: bottom;
+}
+
+.text-orange-darker{
+    color: #ff6633;
+}
+.yellow {
+    background-color: #FFFBB0;
+    color: black;
+}
+
+.dropdown-menu{
+    left: 18px;
+    top: 50px;
+}
+
+.divider{
+    padding-bottom: 1px !important;
+    padding-top: 0 !important;
+}
+
+/*
+PROBLÈME LIÉ À FIREFOX POUR LES FIELDSET ET LE RESPONSIVE :http://stackoverflow.com/questions/17408815/fieldset-resizes-wrong-appears-to-have-unremovable-min-width-min-content/17863685#17863685
+*/
+@-moz-document url-prefix() {
+    fieldset { display: table-cell; }
+}
+
+/*#####################################
+        TÉMOIN DE CHARGEMENT
+#####################################*/
+.loading{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(100, 100, 100, 0.75);
+    z-index: 999;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: wait;
+}
+
+.loading:before, .loading:after {
+    border-radius: 50%;
+    width: 2.5em;
+    height: 2.5em;
+    border: 10px solid;
+    position: absolute;
+    margin-top: -1em;
+    margin-left: -1em;
+}
+
+.loading:before {
+    content: '';
+    border-color: white transparent;
+    animation: tourneH 5s infinite linear;
+}
+
+.loading:after {
+    content: '';
+    border-color: transparent black;
+    animation: tourneH 1s infinite linear;
+}
+
+.beating{
+    left: -20px;
+    top: 2px;
+    animation: beating 1s infinite linear;
+}
+
+tr.beating{
+    animation: beatingLine 1s infinite linear;
+}
+
+.raimbow{
+    background: linear-gradient( 45deg ,
+    rgba(255, 0, 0, 1) 0%,
+    rgba(255, 255, 0, 1) 15%,
+    rgba(0, 255, 0, 1) 30%,
+    rgba(0, 255, 255, 1) 50%,
+    rgba(0, 0, 255, 1) 65%,
+    rgba(255, 0, 255, 1) 80%,
+    rgba(255, 0, 0, 1) 100%);
+    background-position: left 0 bottom 0;
+    animation: yolo 1s infinite linear;
+}
+
+@keyframes tourneH {
+    0% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes beatingLine {
+    0%{
+        box-shadow: 0 0 10px #006699;
+    }
+    15%{
+        box-shadow: 0 0 0 #fff;
+    }
+    30%{
+        box-shadow: 0 0 10px #006699;
+    }
+}
+
+@keyframes beating {
+    0%{
+        box-shadow: 0 0 10px #fff;
+    }
+    15%{
+        box-shadow: 0 0 0 #fff;
+    }
+    30%{
+        box-shadow: 0 0 10px #fff;
+    }
+}
+
+@keyframes yolo{
+    0%{
+        background-position: left 0 bottom 0;
+    }
+    100%{
+        background-position: left 1200px bottom 0;
+    }
+}
+
+.img-sncf+div{
+    position: fixed;
+    top: 51px;
+    display: none;
+}
+
+.gi-2x{font-size: 2em;}
+.gi-3x{font-size: 3em;}
+.gi-4x{font-size: 4em;}
+.gi-5x{font-size: 5em;}
+
+.yellow   { background-color:#FFFBB0 !important; color: black ;}

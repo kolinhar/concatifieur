@@ -1,0 +1,92 @@
+<div style="position: relative">
+    <table class="table table-bordered table-striped">
+        <thead class="violet">
+        <tr>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'projet'; reverse = !reverse;">
+                        Projet {{(predicate==='projet' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'nomenclature'; reverse = !reverse;">
+                        Nomenclature {{(predicate==='nomenclature' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'date_ouverture'; reverse = !reverse;">
+                        Date d'ouverture {{(predicate==='date_ouverture' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'date_cloture'; reverse = !reverse;">
+                        Date de clôture {{(predicate==='date_cloture' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'type'; reverse = !reverse;">
+                        Compte {{(predicate==='type' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'poids'; reverse = !reverse;">
+                        Poids {{(predicate==='poids' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'type'; reverse = !reverse;">
+                        Type {{(predicate==='type' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th ng-if="GestionProjets.theIsDifferent">
+                Vu
+            </th>
+
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="projet in GestionProjets.Liste | orderBy:predicate:reverse track by $index" ng-class="{yellow: projet.different_agadir}">
+            <td>{{projet.projet}}</td>
+            <td>
+                <div ng-if="projet.type !== 'projet'">
+                    <select ng-if="GestionProjets.ShowSelect[$index]" name="repeatSelect" id="repeatSelect" ng-model="projet.val_nomenclature" class="col-md-12"
+                            ng-options="nomenc.val_nomenclature as nomenc.nomenclature group by nomenc.prestation for nomenc in GestionProjets.NomencsListe" ng-change="GestionProjets.Update(projet)">
+                    </select>
+                    <select ng-if="!GestionProjets.ShowSelect[$index]" ng-mouseenter="GestionProjets.Show($index)" class="col-md-12" name="repeatSelectDisabled" id="repeatSelectDisabled" ng-model="projet.nomenclature">
+                        <option ng-value="projet.nomenclature">{{projet.nomenclature}}</option>
+                    </select>
+                </div>
+            </td>
+            <td> {{projet.date_ouverture | date:"dd/MM/yyyy"}}</td>
+            <td>{{projet.date_cloture | date:"dd/MM/yyyy"}}</td>
+            <td> {{projet.compte }}</td>
+            <td> {{projet.poids }}</td>
+            <td> <select name="singleSelect" ng-model="projet.type" ng-change="GestionProjets.UpdateType(projet, '{{projet.type}}')">
+                <option value="fiche">Fiche</option>
+                <option value="projet">Projet</option>
+                <option value="">Tous</option>
+            </select></td>
+            <td ng-if="projet.different_agadir">
+                <button class="btn btn-success btn-xs"
+                        title="Marquer comme vu"
+                        ng-click="GestionProjets.UpdateVue(projet)">
+                    <span class="glyphicon glyphicon-sunglasses"></span>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

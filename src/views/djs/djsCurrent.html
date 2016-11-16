@@ -1,0 +1,43 @@
+<table class="table table-condensed no-margin">
+    <thead class="head-djs violet">
+    <tr>
+        <th style="width: 30px">
+            <button class="btn btn-default btn-xs pull-left"
+                    ng-click="djs.prev()">
+                <b><</b>
+            </button>
+            <span ng-if="realDjs.verouiller" class="glyphicon glyphicon-ok-circle text-success"></span>
+
+        </th>
+        <th colspan="2" class="text-center">
+            <a style="padding-left: 0" ng-href="#/djs/{{agent}}/{{djs.anneeEnCours}}/{{djs.numSemaineEnCours}}">
+                Semaine {{djs.numSemaineEnCours}}
+                <small ng-show="djs.anneeAujourdhui !== djs.anneeEnCours">/{{djs.anneeEnCours}}</small>
+            </a>
+            <span ng-if="realDjs.verrouiller" class="glyphicon glyphicon-ok-circle"></span>
+        </th>
+        <th style="width: 30px">
+            <button class="btn btn-default btn-xs pull-right"
+                    ng-click="djs.next()">
+                <b>></b>
+            </button>
+        </th>
+    </tr>
+    <tr>
+        <th colspan="4" class="text-center">
+            <p style="margin: 10px 0 0;">du {{djs.dateDeb|date:'dd/MM'}} au {{djs.dateFin|date:'dd/MM'}}</p>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="jour in djs.tabJour">
+        <td colspan="2">{{jour}} {{djs.lesJours[jour].dateLink.split('-')[0]}}</td>
+        <td colspan="2" class="text-center"
+            ng-class="{'label-journee-valider':djs.lesJours[jour].cloturer, success: djs.lesJours[jour].minutesRestantes === 0 && !djs.lesJours[jour].cloturer, info: djs.lesJours[jour].minutesRestantes > 0 && djs.lesJours[jour].minutesRestantes < djs.lesJours[jour].minutesTotal, warning: djs.lesJours[jour].minutesRestantes === djs.lesJours[jour].minutesTotal && djs.lesJours[jour].minutesRestantes !== 0, danger: djs.lesJours[jour].minutesRestantes < 0 && !djs.lesJours[jour].cloturer }">
+                <span ng-class="{'label-journee-valider': djs.lesJours[jour].verrouiller, 'label': djs.lesJours[jour].verrouiller && !djs.lesJours[jour].cloturer}">
+            <a ng-href="#/pointages/{{agent}}/{{djs.lesJours[jour].dateLink}}">{{djs.lesJours[jour].minutesRestantesH}}</a>
+            </span>
+        </td>
+    </tr>
+    </tbody>
+</table>

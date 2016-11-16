@@ -1,0 +1,61 @@
+<nav class="col-md-5 col-md-offset-4">
+    <ul class="pagination">
+        <li>
+            <a ng-href="#/check/djs/{{djs3s.djsCounter.anneeAvant}}/{{djs3s.djsCounter.numSemaineAvant}}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        <li><a>Semaine</a>  </li>
+        <li>
+            <a ng-href="#/check/djs/{{djs3s.djsCounter.anneeApres}}/{{djs3s.djsCounter.numSemaineApres}}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <li><a ng-href="#/check/djs/{{djs3s.djsCounter.anneeEncoreAvant}}/{{djs3s.djsCounter.numSemaineEncoreAvant}}">{{djs3s.djsCounter.numSemaineEncoreAvant}}</a></li>
+        <li><a ng-href="#/check/djs/{{djs3s.djsCounter.anneeAvant}}/{{djs3s.djsCounter.numSemaineAvant}}">{{djs3s.djsCounter.numSemaineAvant}}</a></li>
+        <li class="active"><a ng-href="#/check/djs/{{djs3s.djsCounter.anneeEnCours}}/{{djs3s.djsCounter.numSemaineEnCours}}">{{djs3s.djsCounter.numSemaineEnCours}}</a></li>
+        <li><a ng-href="#/check/djs/{{djs3s.djsCounter.anneeApres}}/{{djs3s.djsCounter.numSemaineApres}}">{{djs3s.djsCounter.numSemaineApres}}</a></li>
+        <li><a ng-href="#/check/djs/{{djs3s.djsCounter.anneeEncoreApres}}/{{djs3s.djsCounter.numSemaineEncoreApres}}">{{djs3s.djsCounter.numSemaineEncoreApres}}</a></li>
+
+    </ul>
+</nav>
+
+<div style="position: relative;" class="col-md-8 col-md-offset-2">
+    <table class="table"
+           ng-repeat="(nomSecteur, secteur) in djs3s.djsTotal.secteurs">
+        <thead class="djs3s violet">
+            <tr>
+                <th>
+
+                </th>
+                <th colspan="{{2 + djs3s.datesListe.length}}" class="text-center">Du {{ djs3s.datesListe[0]|date:"EEEE dd MMMM"}} au {{ djs3s.datesListe[4]|date:"EEEE dd MMMM"}} {{djs3s.djsCounter.anneeEnCours}}</th>
+            </tr>
+            <tr>
+                <th>{{nomSecteur}}</th>
+                <th ng-repeat="jour in djs3s.datesListe track by $index" class="text-center">
+                    {{jour|date:"EEE dd"}}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="(nomAgent, djs) in secteur">
+                <td class="nom-agent">{{nomAgent}}</td>
+                <td ng-if="djs !== null"
+                    ng-repeat="temps in djs.lesJours"
+                    ng-class="{success : temps.sameAgadir, danger: !temps.sameAgadir}"
+                    class="text-center">
+                    <span>
+                        <a ng-href="#/pointages/check/{{djs.cp}}/{{djs3s.datesListe[$index]|date:'dd-MM-yyyy'}}">{{temps.heuresRestantes}}</a>
+                    </span>
+                </td>
+
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="loading"
+         ng-class="{ flex: djs3s.lesDjsEnCour.isLoading}"
+         ng-hide="!(djs3s.lesDjsEnCour.isLoading)">
+        <div></div>
+    </div>
+</div>

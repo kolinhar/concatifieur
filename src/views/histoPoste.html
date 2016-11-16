@@ -1,0 +1,60 @@
+<button ng-click="Fiches.histo.show = false" title="Fermer l'historique">X</button>
+<fieldset>
+    <legend><h2>Poste {{Fiches.histo.numPoste}}</h2></legend>
+    <fieldset ng-repeat="ligne in Fiches.HistoPoste(Fiches.histo.numPoste) | orderBy:ligne.date:true" ng-class="{ cloture: ligne.dateCloture!==undefined, enCours: ligne.dateCloture===undefined}">
+        <legend>
+            <h3>Fiche {{ligne.numfiche}}</h3>
+        </legend>
+        <p>
+            <span>Créée le: </span><span>{{ligne.date | date:'dd/MM/yyyy HH:mm:ss'}}</span>
+            <span>État: </span><span>{{ligne.etat}}</span>
+        </p>
+        <p>
+            <span>Demandeur: </span><span>{{ligne.demandeur}}</span>
+            <span>Agent: </span><span>{{getNomAgent(ligne.agent)}}</span>
+        </p>
+        <p>
+            <span>Nomenclature: </span><span>{{ligne.nomenclature}}</span>
+            <span ng-if="ligne.dateCloture!==undefined">Date de clôture: </span><span ng-if="ligne.dateCloture!==undefined">{{ligne.dateCloture | date:'dd/MM/yyyy HH:mm:ss'}}</span>
+        </p>
+        <p>
+            <span>Description: </span><span>{{ligne.description}}</span>
+        </p>
+        <p>
+            <span>Observation: </span><span>{{ligne.observation}}</span>
+        </p>
+        <hr/>
+        <h4>Liste des opérations éffectuées:</h4>
+        <table border="1" class="fiches histo">
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Éffectuée le</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>blabla</td>
+                    <td>06/12/1982 14:00:00</td>
+                </tr>
+                <tr>
+                    <td>test</td>
+                    <td>01/04/1907 19:52:43</td>
+                </tr>
+                <tr>
+                    <td>remplissage</td>
+                    <td>01/03/2002 08:00:00</td>
+                </tr>
+                <tr>
+                    <td>BULLSHIT</td>
+                    <td>15/01/2015 16:15:00</td>
+                </tr>
+                <!--DERNIÈRE POUR L'EXEMPLE-->
+                <tr ng-if="ligne.dateCloture !== undefined">
+                    <td>Clôturation</td>
+                    <td>{{ligne.dateCloture | date:'dd/MM/yyyy HH:mm:ss'}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </fieldset>
+</fieldset>

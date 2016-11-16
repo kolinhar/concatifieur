@@ -1,0 +1,118 @@
+<div id="box-menu"
+     ng-controller="DJS">
+    <div id="box-logo">
+        <img src="assets/LOGO_SNCF_RESEAU_NOIR2.PNG" style="width:75px" alt="logo sncf noir"
+             ng-click="menunav.hide = !menunav.hide">
+    </div>
+    <div class="no-scroll">
+        <ul id="box-link"
+        class="list-group">
+        <li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('gestionFiches') !== -1}">
+            <a href="#/gestionFiches">
+                <span class="ico duplicate"></span>
+                <span class="li-text">Gestion des fiches</span>
+            </a>
+        </li>
+        <li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('pointage') !== -1}">
+            <a href="#/pointages/{{menunav.cookieStore.get('agent')}}/{{menunav.today.dateFr}}">
+                <span class="ico clock"></span>
+                <span class="li-text">Pointages</span>
+            </a>
+        </li>
+        <li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('fiche') !== -1}">
+            <a href="#/fiche">
+                <span class="ico edit"></span>
+                <span class="li-text">Créer une fiche</span>
+            </a>
+        </li>
+        <li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('djs') !== -1 && menunav.route.current.$$route.originalPath.indexOf('check') === -1}"
+            ng-if="menunav.cookieStore.get('status') === 'Encadrement' || menunav.cookieStore.get('status') === 'DU'">
+            <a ng-href="#/djs/{{menunav.today.year}}/{{menunav.today.weekNum}}">
+                <span class="ico supervision"></span>
+                <span class="li-text">DJS du secteur</span>
+            </a>
+        </li>
+<!--
+		<li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('enquete') !== -1 && menunav.route.current.$$route.originalPath.indexOf('enqueteform') === -1}">
+            <a href="#/enquete/{{menunav.today.year}}">
+                <span class="ico help"></span>
+                <span class="li-text">Enquête satisfaction</span>
+            </a>
+        </li>
+        <li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('enqueteform') !== -1}"
+            ng-if="menunav.cookieStore.get('status') === 'DU'">
+            <a href="#/enqueteform/{{menunav.today.year}}">
+                <span class="ico check"></span>
+                <span class="li-text">Questionnaires</span>
+            </a>
+        </li>
+-->
+        <!--<li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('ewala') !== -1}"
+            ng-if="menunav.cookieStore.get('status') !== 'Agent'">
+            <a href="#/ewala">
+                <span class="ico map"></span>
+                <span class="li-text">Ewala</span>
+            </a>
+        </li>-->
+<!--        <li ng-class="{'blue-lighter': menunav.route.current.$$route.originalPath.indexOf('enqueteform') !== -1}"
+            ng-if="menunav.cookieStore.get('status') === 'DU'">
+            <a href="#/enqueteform/{{menunav.today.year}}">
+                <span class="ico etat"></span>
+                <span class="li-text">Questionnaires</span>
+            </a>
+        </li>-->
+        <li class="li-input"
+            ng-controller="FastGoToFiche">
+            <div class="form-group">
+                <input type="text"
+                       class="form-control text-center"
+                       style="margin: 10px 3px ! important; width: calc(100% - 6px);"
+                       placeholder="N°fiche"
+                       ng-model="fastgotofiche.numFiche"
+                       ng-keyup="fastgotofiche.go($event)">
+            </div>
+        </li>
+        <!--
+       /!\ ÉLÉMENT DE STYLE POUR LE MENU, VALABLE UNIQUEMENT SI LE MENU AGENT DISPOSE DE 4 LIENS /!\
+       -->
+        <!--<li ng-if="menunav.cookieStore.get('status') === 'Agent'"></li>-->
+        <li class="li-table"
+            ng-include="'views/djs/djsCurrent.html'"></li>
+        <li class="li-table">
+            <fieldset ng-controller="GoToFiche">
+                <legend class="text-center" style="color:#fff;">Aller à la fiche</legend>
+
+                <div class="form-group">
+                    <select class="form-control"
+                            ng-model="gotofiche.region"
+                            ng-options="ligne.value as ligne.label for ligne in RegionService.List">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input type="number"
+                           max="{{gotofiche.maxYear}}"
+                           class="form-control"
+                           ng-model="gotofiche.annee"/>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group"
+                         ng-class="{'has-error': gotofiche.models.inputError}">
+                        <input type="text"
+                               placeholder="N° fiche"
+                               class="form-control"
+                               ng-model="gotofiche.models.inputFiche"
+                               ng-keyup="gotofiche.event($event)"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default"
+                                    ng-click="gotofiche.go()">OK
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </fieldset>
+        </li>
+    </ul>
+    </div>
+</div>

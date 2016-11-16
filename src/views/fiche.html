@@ -1,0 +1,13 @@
+<section>
+    <div>
+        <section ng-include="'views/ficheAgadir/ficheAgadirInformatique.html'"></section>
+
+        <section ng-include="ficheagadir.routeParams.numFiche !== undefined && 'views/ficheAgadir/listePointages.html'"
+                 class="hidden-print"></section>
+
+        <section ng-include="ficheagadir.routeParams.numFiche === undefined && 'views/ficheAgadir/creationFicheAgadir.html'"></section>
+    </div>
+    <div class="loading" ng-class="{ flex: ficheagadir.isLoading }" ng-hide="!ficheagadir.isLoading">
+        <div></div>
+    </div>
+</section>

@@ -1,0 +1,171 @@
+<section>
+    <article style="position: relative;">
+        <fieldset>
+            <legend class="row">
+                <span class="col-md-6"
+                      ng-class="{'has-error': affairecreation.error.titre}">
+                    <label class="control-label">Titre :</label>
+                    <input class="form-control"
+                           type="text"
+                           ng-model="affairecreation.form.titre"/>
+                </span>
+
+                <span class="col-md-6"
+                      ng-class="{'has-error': affairecreation.error.heure}">
+                    <label class="control-label">Temps (en heures) :</label>
+                    <input class="form-control"
+                           type="number"
+                           ng-model="affairecreation.form.heure"
+                           min="1"
+                           step="1"/>
+                </span>
+            </legend>
+
+            <div class="row">
+                <div class="col-md-6"
+                     ng-class="{'has-error': affairecreation.error.postes}">
+<!-- FALLAIT PAS FAIRE ÇA AU FINAL, MAIS JE LE GARDE EN SOUVENIR DE CES 3 HEURES PERDUES... :'(
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Liste des postes :</th>
+                                <th width="1%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr  ng-repeat="poste in affairecreation.form.postes">
+                                <td>
+                                    <angucomplete-alt
+                                        id="posteAutocompleteInput{{$index}}"
+                                        input-class="form-control"
+                                        selected-object="affairecreation.form.postes[$index].val"
+                                        initial-value="{{poste.title}}"
+                                        remote-url="{{DIURLAPI.URLapiRemote + 'ordinateur/recherche/'}}"
+                                        remote-url-data-field="L_Resultats"
+                                        search-fields="calife"
+                                        title-field="calife"
+                                        description-field="description"
+                                        pause="400"
+                                        match-class="bold"
+                                        minlength="1"
+                                        text-no-results="Aucun résultat"
+                                        text-searching="Recherche en cours..."
+                                        template-url="views/ficheAgadir/DemandeurAutocomplete.html"/>
+                                </td>
+                                <td>
+                                    <button ng-click="affairecreation.form.removePoste($index)"
+                                            class="btn btn-danger" title="Supprimer ce poste">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <button ng-click="affairecreation.form.addPoste()"
+                                            class="btn btn-success"
+                                            title="Ajouter un poste">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
+                                </td>
+                        </tr>
+                        </tbody>
+                    </table>
+-->
+                    <label class="control-label">Liste des postes :</label>
+                    <textarea class="form-control"
+                              ng-model="affairecreation.form.postes"
+                              rows="13"></textarea>
+                </div>
+                <div class="col-md-6"
+                     ng-class="{'has-error': affairecreation.error.projet}">
+                    <label class="control-label">Projet :</label>
+
+                    <span class="input-group">
+                        <angucomplete-alt
+                            id="projectAutocompleteInput"
+                            input-class="form-control angucomplete-decale"
+                            selected-object="affairecreation.form.projet"
+                            initial-value="{{affairecreation.form.projet.description.intitule}}"
+                            title-field="intitule"
+                            search-fields="intitule"
+                            local-data="affairecreation.Projects.liste"
+                            pause="0"
+                            match-class="bold"
+                            minlength="1"
+                            text-no-results="Aucun résultat"
+                            text-searching="Recherche en cours..."
+                            template-url="views/ficheAgadir/ProjetAutocomplete.html"></angucomplete-alt>
+                        <span class="input-group-btn"
+                              title="Liste des projets">
+                            <button class="btn btn-default"
+                                    data-toggle="modal"
+                                    data-target="#ProjetsModal">
+                                <span class="glyphicon glyphicon-list"></span>
+                            </button>
+                        </span>
+                    </span>
+                </div>
+
+                <div class="col-md-6"
+                     ng-class="{'has-error': affairecreation.error.demandeur}">
+                    <label class="control-label">Demandeur :</label>
+                    <angucomplete-alt
+                            id="agentAutocompleteInput"
+                            input-class="form-control"
+                            selected-object="affairecreation.form.demandeur"
+                            initial-value="{{affairecreation.form.demandeur.description.cp}}"
+                            remote-url="{{DIURLAPI.URLapiRemote + 'agent/recherche/all/'}}"
+                            remote-url-data-field="L_Resultats"
+                            title-field="display"
+                            description-field="cp"
+                            search-fields="display, cp"
+                            pause="400"
+                            match-class="bold"
+                            minlength="3"
+                            text-no-results="Aucun résultat"
+                            text-searching="Recherche en cours..."
+                            template-url="views/ficheAgadir/DemandeurAutocomplete.html"></angucomplete-alt>
+                </div>
+
+                <div class="col-md-6"
+                     ng-class="{'has-error': affairecreation.error.agent}">
+                    <label class="control-label">Agent Affecté :</label>
+                    <select class="form-control"
+                            ng-model="affairecreation.form.agent"
+                            ng-options="agent.cp as agent.nomPrenom for agent in affairecreation.AgentsList"></select>
+                </div>
+
+                <div class="col-md-6"
+                     ng-class="{'has-error': affairecreation.error.suiviPar}">
+                    <label class="control-label">Suivi par :</label>
+                    <select class="form-control"
+                            ng-model="affairecreation.form.suiviPar"
+                            ng-options="agent.cp as agent.nomPrenom for agent in affairecreation.AgentsListSuivi"></select>
+                </div>
+
+                <div class="col-md-12"
+                     ng-class="{'has-error': affairecreation.error.description}">
+                    <label class="control-label">Description :</label>
+                    <textarea maxlength="2000"
+                              class="form-control"
+                              rows="10"
+                              ng-model="affairecreation.form.description"></textarea>
+                </div>
+
+
+                <div class="col-md-2 col-md-offset-5">
+                    <p class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-blue form-control"
+                                ng-click="affairecreation.Create()">Créer l'affaire</button>
+                    </p>
+                </div>
+            </div>
+        </fieldset>
+    </article>
+    <div class="loading"
+         ng-class="{ flex: affairecreation.isLoading }"
+         ng-hide="!affairecreation.isLoading">
+        <div></div>
+    </div>
+</section>
