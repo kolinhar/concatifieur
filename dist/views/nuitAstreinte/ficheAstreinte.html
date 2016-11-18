@@ -1,0 +1,172 @@
+<div style="position: relative">
+    <section class="container-fluid">
+
+        <div class="col-md-12">
+            <p class="form-group"
+               ng-class="{'has-error': pointage.errProj}">
+                <label class="control-label">Projet :</label>
+                <span class="input-group">
+                    <angucomplete-alt
+                            id="projectAutocompleteInput4"
+                            input-class="form-control angucomplete-decale"
+                            initial-value="{{pointage.projet}}"
+                            selected-object="pointage.selectedProject"
+                            title-field="intitule"
+                            search-fields="intitule"
+                            local-data="ProjetModalService.list"
+                            pause="0"
+                            match-class="bold"
+                            minlength="1"
+                            text-no-results="Aucun résultat"
+                            text-searching="Recherche en cours..."
+                            template-url="views/ficheAgadir/ProjetAutocomplete.html"
+                            required></angucomplete-alt>
+                    <span class="input-group-btn"
+                          title="Liste des projets">
+                        <button class="btn btn-default"
+                                data-toggle="modal"
+                                data-target="#ProjetsModal">
+                            <span class="glyphicon glyphicon-list"></span>
+                        </button>
+                    </span>
+                </span>
+            </p>
+        </div>
+
+        <div class="col-md-12">
+            <p class="form-group"
+               ng-class="{'has-error': pointage.errDesc}">
+                <label class="control-label">Travail réalisé :</label>
+                    <textarea rows="8"
+                              class="form-control"
+                              maxlength="1000"
+                              ng-model="pointage.TravailRealise"
+                              required></textarea>
+            </p>
+        </div>
+
+        <div ng-if="habilitation !== 'Agent'" class="col-md-12">
+            <p class="form-group">
+                <label>Pointer pour :</label>
+                <select ng-if="habilitation === 'Encadrement'" class="form-control"
+                        ng-model="pointage.cp"
+                        ng-options="agent.cp as agent.nomPrenom for agent in agentsDpx"
+                        tabindex="6"></select>
+
+                <select ng-if="habilitation === 'DU'" class="form-control"
+                        ng-model="pointage.cp"
+                        ng-options="agent.cp as agent.nomPrenom for agent in lesAgents"
+                        tabindex="6"></select>
+            </p>
+        </div>
+
+        <div class="col-md-5 col-md-offset-1">
+            <div class="form-group"
+                 ng-class="{'has-error': pointage.errDateDeb}">
+                <label class="control-label">Date de début :</label>
+
+                <div class="input-form date">
+                    <input type="text"
+                           id="datetimepicker4"
+                           class="form-control"
+                           placeholder="JJ/MM/AAAA"
+                           ng-model="pointage.dateDebut"
+                           pick-a-date="date"
+                           pick-a-date-options="{ format: 'dd/mm/yyyy', onSet: blurInput}"/>
+                </div>
+            </div>
+        </div>
+
+        <!--<div class="col-md-5">
+            <div class="form-group"
+                 ng-class="{'has-error': pointage.errHeureDeb}">
+                <label class="control-label"
+                       for="timepicker1">Heure de début:</label>
+
+                <div class="input-form">
+                    <input type="time"
+                           id="timepicker1"
+                           placeholder="hh:mm"
+                           pick-a-time="time"
+                           pick-a-time-options="{ format: 'HH:i', interval: 15, onSet: blurInput }"
+                           ng-model="pointage.heureDebut"
+                           class="form-control"/>
+                </div>
+            </div>
+        </div>-->
+
+        <div class="col-md-5">
+            <p class="form-group"
+               ng-class="{'has-error': pointage.errHeureDeb}">
+                <label class="control-label">Heure de début :</label>
+                <input type="text"
+                       class="form-control"
+                       ng-model="pointage.heureDebut"
+                       placeholder="hh:mm"
+                       required>
+            </p>
+        </div>
+
+        <div class="col-md-5 col-md-offset-1">
+            <div class="form-group"
+                 ng-class="{'has-error': pointage.errDateFin}">
+                <label class="control-label">Date de fin:</label>
+
+                <div class="input-form date">
+                    <input type="text"
+                           id="datetimepicker5"
+                           class="form-control"
+                           placeholder="JJ/MM/AAAA"
+                           ng-model="pointage.dateFin"
+                           pick-a-date="date"
+                           pick-a-date-options="{ format: 'dd/mm/yyyy', onSet: blurInput }"/>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!--<div class="col-md-5">
+        <div class="form-group"
+             ng-class="{'has-error': pointage.errHeureFin}">
+            <label class="control-label"
+                   for="timepicker2">Heure de fin:</label>
+            <div class="input-form">
+                <input type="time"
+                       id="timepicker2"
+                       placeholder="hh:mm"
+                       pick-a-time="time"
+                       pick-a-time-options="{ format: 'HH:i', interval: 15, onSet: blurInput }"
+                       ng-model="pointage.heureFin"
+                       class="form-control"/>
+            </div>
+        </div>
+    </div>-->
+
+        <div class="col-md-5">
+            <p class="form-group"
+               ng-class="{'has-error': pointage.errHeureFin}">
+                <label class="control-label">Heure de fin :</label>
+                <input type="text"
+                       class="form-control"
+                       ng-model="pointage.heureFin"
+                       placeholder="hh:mm"
+                       required>
+            </p>
+        </div>
+
+
+        <div class="col-md-4 col-md-offset-4">
+            <p class="form-group">
+                <label>&nbsp;</label>
+                <span ng-include="URLButton"></span>
+            </p>
+        </div>
+
+    </section>
+</div>
+<div class="loading"
+     ng-class="{ flex: isLoading }"
+     ng-hide="!isLoading">
+    <div></div>
+</div>

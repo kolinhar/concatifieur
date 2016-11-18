@@ -1,0 +1,165 @@
+<table class="table table-bordered">
+    <thead class="violet">
+        <tr>
+            <th width="180">
+                <nobr>
+                    <span ng-click="predicate = 'etat'; reverse = !reverse;">
+                        État {{(predicate==='etat' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th width="68">
+                <nobr>
+                    <span ng-click="predicate = 'nFiche'; reverse = !reverse;">
+                        Fiche {{(predicate==='nFiche' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'description'; reverse = !reverse;">
+                        Description {{(predicate==='description' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th>
+                <nobr>
+                    <span ng-click="predicate = 'demandeur'; reverse = !reverse;">
+                        Demandeur {{(predicate==='demandeur' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th width="118">
+                <nobr>
+                    <span ng-click="predicate = 'poste'; reverse = !reverse;">
+                        Poste {{(predicate==='poste' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th width="90">
+                <nobr>
+                    <span ng-click="predicate = 'date'; reverse = !reverse;">
+                        Date {{(predicate==='date' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+            <th width="203">
+                <nobr>
+                    <span ng-click="predicate = 'nomAffectation'; reverse = !reverse;">
+                        Affectation {{(predicate==='nomAffectation' ? (reverse ? '↑' : '↓') : '' )}}
+                    </span>
+                </nobr>
+            </th>
+        </tr>
+    </thead>
+    <tbody ng-repeat="ligne in Fiches[liste].Liste | filter:search | orderBy:predicate:reverse">
+        <tr ng-class="{'danger':ligne.isUrgent, 'yellow':ligne.isPrioritaire}">
+            <td width="180" rowspan="2">
+                <select class="form-control"
+                        ng-model="ligne.etat"
+                        ng-options="label for label in EtatsList.liste"
+                        ng-change = "ChangementEtat(ligne)"
+                        ng-disabled="ligne.isCloture === true"></select>
+            </td>
+            <td width="90" rowspan="2"
+                title="aller à {{(ligne.nFiche.toString().indexOf('AFF') === 0 ? 'l\'affaire' : 'la fiche')}} {{ligne.nFiche}}">
+                <span ng-class="{label: ligne.isCloture, 'label-cloture': ligne.isCloture}">
+                    <a ng-href="#/{{(ligne.nFiche.toString().indexOf('AFF') === 0 ? 'affaire/lire' : 'fiche')}}/{{ligne.date | date: 'yyyy'}}/{{ligne.nFiche}}"
+                       title="aller à {{(ligne.nFiche.toString().indexOf('AFF') === 0 ? 'l\'affaire' : 'la fiche')}} {{ligne.nFiche}}">
+                        {{ligne.nFiche | limitTo:5}}{{ligne.nFiche.length > 5 ? '...' : ''}}
+                    </a>
+                </span>
+                <img ng-src={{ligne.canal}} width="16px" height="16px" style="float:right;" title="{{ligne.nomCanal}}"/>
+            </td>
+            <td  rowspan="2" title="{{ligne.description}}">
+                <a ng-href="#/{{(ligne.nFiche.toString().indexOf('AFF') === 0 ? 'affaire/lire' : 'fiche' )}}/{{ligne.date | date: 'yyyy'}}/{{ligne.nFiche}}"
+                   title="{{ligne.description}}">
+                    {{ligne.description | limitTo:230}}{{ligne.description.length > 230 ? '...' : ''}}
+                </a>
+            </td>
+            <td>
+                <a ng-href="#/gestionFiches/recherche?cpdemandeur={{ligne.cpDemandeur}}&isCloture=false">{{ligne.demandeur}}</a>
+            </td>
+            <td width="118">
+                <span ng-class="{label: ligne.multiPoste, 'label-warning': ligne.multiPoste}">
+                    <a ng-href="#/gestionFiches/recherche?materiel={{ligne.poste}}&isCloture=false">{{ligne.poste}}</a>
+                </span>
+            </td>
+            <td width="90">
+                <a ng-href="#/gestionFiches/recherche?dateDebut={{ligne.date | date: 'dd/MM/yyyy'}}&dateFin={{ligne.date | date: 'dd/MM/yyyy'}}&isCloture=false">{{ligne.date | date: 'dd/MM/yyyy'}}</a>
+            </td>
+            <td width="203">
+<!--
+UN AGENT NE PEUT PAS MODIFIER L'AFFECTATION D'UNE FICHE SI ELLE NE LUI EST PAS AFFECTÉE, SAUF SI ELLE EST 'NON-AFFECTÉE'
+SEUL UN AGENT QUI A LE STATUS DU/DPX PEUT CHANGER L'AFFECTATION D'UNE FICHE
+-->
+                <select class="form-control"
+                        ng-if="(ligne.affectation !== '0' && ligne.affectation !== cookieStore.get('agent')) || cookieStore.get('status') !== 'Agent'"
+                        ng-model="ligne.affectation"
+                        ng-options="agent.cp as agent.nomPrenom for agent in Fiches.Agents"
+                        ng-change="Affectation(ligne)"
+                        ng-disabled="ligne.isCloture === true || cookieStore.get('status') === 'Agent'"></select>
+
+                <select class="form-control"
+                        ng-if="(ligne.affectation === '0' || ligne.affectation === cookieStore.get('agent')) && cookieStore.get('status') === 'Agent'"
+                        ng-model="ligne.affectation"
+                        ng-options="agent.cp as agent.nomPrenom for agent in Fiches.AgentsAgent"
+                        ng-change="Affectation(ligne)"
+                        ng-disabled="ligne.isCloture === true"></select>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" class="row">
+                <div class="col-md-9" style="padding: 0">
+                    <span class="input-group">
+ <!--PAS D'AUTRE CHOIX QUE DE DUPLIQUER L'ANGUCOMPLETE POUR AVOIR LA COLORATION EN CAS D'ABSENCE DE PROJET-->
+                       <angucomplete-alt
+                                ng-if="ligne.poidsProjet !== 'pas de projet'"
+                                id="projectAutocompleteInput{{$index}}"
+                                input-class="form-control angucomplete-decale"
+                                selected-object="ligne.projet"
+                                initial-value="{{ligne.projet}}"
+                                title-field="intitule"
+                                search-fields="intitule"
+                                local-data="ligne.listeProjet"
+                                pause="0"
+                                match-class="bold"
+                                minlength="1"
+                                text-no-results="Aucun résultat"
+                                text-searching="Recherche en cours..."
+                                template-url="views/ficheAgadir/ProjetAutocomplete.html"></angucomplete-alt>
+
+                        <angucomplete-alt
+                                ng-if="ligne.poidsProjet === 'pas de projet'"
+                                id="projectAutocompleteInput{{$index}}"
+                                input-class="form-control angucomplete-decale label-warning"
+                                selected-object="ligne.projet"
+                                initial-value="{{ligne.projet}}"
+                                title-field="intitule"
+                                search-fields="intitule"
+                                local-data="ligne.listeProjet"
+                                pause="0"
+                                match-class="bold"
+                                minlength="1"
+                                text-no-results="Aucun résultat"
+                                text-searching="Recherche en cours..."
+                                template-url="views/ficheAgadir/ProjetAutocomplete.html"></angucomplete-alt>
+                        <span class="input-group-btn"
+                              title="Liste des projets">
+                            <button class="btn btn-default"
+                                    ng-click="clickForModalProjet(ligne)">
+                                <span class="glyphicon glyphicon-list"></span>
+                            </button>
+                        </span>
+                    </span>
+                </div>
+                <div class="col-md-3" style="padding-right: 0">
+                    <span class="form-group" title="poids du projet">
+                        <label class="form-control text-right"
+                               style="padding-left: 6px; margin-top: 10px !important;">{{ligne.poidsProjet}}</label>
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>

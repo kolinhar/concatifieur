@@ -1,0 +1,51 @@
+<!doctype html>
+<html ng-app="ngAriane">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ariane</title>
+    <link rel="icon" type="image/png" href="images/rocket.png" sizes="64x64"/>
+    <link rel='stylesheet' href='./CSS/1479483323611-dist.css'>
+</head>
+<body class="flexbox">
+<aside ng-controller="menuNav" class="menu-gauche closed hidden-print" ng-class="{closed: menunav.hide}"
+       ng-include="'views/menuNav.html'"></aside>
+<input type="hidden" ng-controller="Auth"/><input type="hidden" ng-controller="SignalRBroadcaster"/>
+<input type="hidden" ng-controller="ProjetsListe"/>
+<input type="hidden" ng-controller="EtatsListe"/>
+<input type="hidden" ng-controller="Agents"/>
+<section class="partie-droite">
+    <nav id="box-views" class="dropdown hidden-print" ng-controller="Notifications"
+         ng-include="'views/notification/barre_top.html'"></nav>
+    <section class="container-fluid main-container nav-top-75" ng-view style="position: relative"></section>
+    <footer ng-include="'views/footer.html'"></footer>
+</section>
+<section ng-controller="ErrorModal" class="modal fade" tabindex="-1" id="ErrorModal">
+    <div ng-include="'views/ErrorModal.html'"></div>
+</section>
+<section ng-controller="VerrouillageDjsModal" class="modal fade" tabindex="-1" role="dialog"
+         id="modal-verrouillage-djs">
+    <div ng-include="'views/djs/modalVerrouillageDjs.html'"></div>
+</section>
+<section ng-controller="VerrouillageDjsModal" class="modal fade" tabindex="-1" role="dialog"
+         id="modal-multiple-verrouillage-djs">
+    <div ng-include="'views/djs/modalMultipleVerrouillageDjs.html'"></div>
+</section>
+<section ng-controller="ChangeLog" class="modal fade" tabindex="-1" role="dialog" id="modal-changeLog">
+    <div ng-include="'views/changeLogModal.html'"></div>
+</section>
+<section ng-controller="DjsManager" class="modal fade" tabindex="-1" id="DjsModal">
+    <div ng-include="'views/djs/modalDjs.html'"></div>
+</section>
+<section ng-controller="ModalProjets" class="modal fade" tabindex="-1" id="ProjetsModal">
+    <div ng-include="'views/projet/modalProjets.html'"></div>
+</section>
+<section class="modal fade" tabindex="-1" id="AffairesModal">
+    <div ng-include="'views/affaire/modalAffaires.html'"></div>
+</section>
+<script src='./JS/1479483323565-dist.js'></script>
+
+<script src="http://comet.ariane.st.sncf.fr/Scripts/jquery.signalR-2.2.0.min.js"></script>
+<script src="http://comet.ariane.st.sncf.fr/signalr/hubs" type="text/javascript"></script>
+</body>
+</html>

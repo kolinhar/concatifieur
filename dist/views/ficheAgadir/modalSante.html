@@ -1,0 +1,132 @@
+<div class="container-fluid">
+
+  <div class="row">
+    <div class="col-md-12 text-center">
+      <label>
+        Informations Live Poste
+      </label>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+      <ul class="list-unstyled">
+          <li>
+              <span class="glyphicon" ng-class="{'glyphicon-ok text-success':santeParc.datas.livePoste.posteOnline, 'glyphicon-remove text-danger':!santeParc.datas.livePoste.posteOnline}"></span> Poste en ligne : <span class="label label-info">{{santeParc.datas.livePoste.ipv4}}</span>
+
+          </li>
+          <li>
+              <span class="glyphicon" ng-class="{'glyphicon-ok text-success':santeParc.datas.livePoste.posteAD, 'glyphicon-remove text-danger':!santeParc.datas.livePoste.posteAD}"></span> Poste inscrit dans l'AD
+
+          </li>
+      </ul>
+  </div>
+
+    <div class="col-md-6">
+        <ul class="list-unstyled">
+
+            <li>
+                <span class="glyphicon" ng-class="{'glyphicon-ok text-success':santeParc.datas.livePoste.dnsLookup, 'glyphicon-remove text-danger':!santeParc.datas.livePoste.dnsLookup}"></span> Alignement IP/DNS
+
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-md-12"><hr/></div>
+
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <select class="form-control" ng-model="santeParc.model"
+                    ng-options="ligne.index as ligne.display for ligne in santeParc.datas.listeAgent"></select>
+        </div>
+
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <label>
+                Informations Live Compte
+            </label>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <ul class="list-unstyled">
+            <li>
+                <span class="glyphicon" ng-class="{'glyphicon-ok text-success':santeParc.datas.liveCompte.isRegistered, 'glyphicon-remove text-danger':!santeParc.datas.liveCompte.isRegistered}"></span> Compte AD
+            </li>
+            <li>
+                Expiration du mot de passe : <span class="label label-info">{{santeParc.datas.liveCompte.pwdNextSet}}</span>
+            </li>
+            <li>
+                Dernier changement de mot de passe :  <span class="label label-info">{{santeParc.datas.liveCompte.pwdLastSet}}</span>
+            </li>
+        </ul>
+    </div>
+
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <label>
+                    Historique du poste
+                </label>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <ul class="list-unstyled">
+                <li>
+                    <span class="glyphicon" ng-class="{'glyphicon-ok text-success':santeParc.datas.liste[santeParc.model].ConfigOrdinateur.SpoolerServiceLance, 'glyphicon-remove text-danger':!santeParc.datas.liste[santeParc.model].ConfigOrdinateur.SpoolerServiceLance}"></span> Spooler d'impression lancé
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-12"><hr/></div>
+
+        <div class="col-md-4">
+            <table class="">
+                <thead>
+                <tr>
+                    <th class="text-center">Admin</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="admin in santeParc.datas.liste[santeParc.model].ConfigOrdinateur.AdminsCp">
+                    <td ng-class="{ 'word-break': admin.length > 20 }">{{admin}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            <table class="">
+                <thead>
+                <tr>
+                    <th colspan="2" class="text-center">Lecteurs</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="lecteur in santeParc.datas.liste[santeParc.model].ConfigOrdinateur.LecteursReseaux">
+                    <td>{{lecteur.Lettre}}</td>
+                    <td ng-class="{ 'word-break': lecteur.Chemin.length > 20 }">{{lecteur.Chemin}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            <table class="">
+                <thead>
+                <tr>
+                    <th colspan="2" class="text-center">Imprimantes</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="printer in santeParc.datas.liste[santeParc.model].ConfigOrdinateur.ImprimantesConnectees">
+                    <td>
+                        <span style="color: green" class="glyphicon" ng-class="{'glyphicon-ok': printer.EstParDefaut}"></span>
+                    </td>
+                    <td ng-class="{ 'word-break': printer.Nom.length > 20 }">{{printer.Nom}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

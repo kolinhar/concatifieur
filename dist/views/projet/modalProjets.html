@@ -1,0 +1,29 @@
+<div class="modal-dialog">
+    <div class="modal-content">
+        <header class="modal-header">
+            <button type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="text-center">Liste des projets</h4>
+        </header>
+        <div class="modal-body">
+            <table id="projetIci">
+                <thead class="violet">
+                    <tr>
+                        <th>Choisissez un projet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="projet in modalprojets.modal.list"
+                        ng-click="clickProj(projet)"
+                        style="cursor: pointer;">
+                        <td>{{projet.intitule}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

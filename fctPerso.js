@@ -3,6 +3,15 @@
 const fs = require("fs");
 const path = require("path");
 
+const IGNORENAME = ".ignore";
+const REGEXPSPACEBETWEENTAGS = />\s+</gm;
+const REGEXPNEWLINE = /\r*\n*/gm;
+const REGEXPINNERCONCATTAG = /<!--CONCATIFICATION-->(<.*?>)<!--\/CONCATIFICATION-->/gmi;
+const REGEXPINNERCOMMENTTAG = /<!--\s*.*\s*-->/gm;
+const REGEXPSTRINGINSTRING = /["|'].*?["|']/;
+var INDEXFILENAME = "";
+var SRCFOLDERNAME = "";
+
 /**
  * (SYNC) RECHERCHE LES FICHIERS QUI COMPORTENT UNE EXTENSION DONNÉE DANS UN DOSSIER ET TOUS SES SOUS-DOSSIERS
  * @param {string} chemin - réperetoire dans lequel on cherche les fichiers
@@ -81,29 +90,29 @@ function deleteFuckingFolder (path) {
 /**
  * (SYNC) CRÉE UN FICHIER INDEX.HTML DANS LE RÉPERTOIRE PASSÉ EN PARAMÈTRE
  * @param {string} indexOrig - l'emplacement du fichier d'origine
- * @param {string} path - le répertoire de destination
+ * @param {string} pathDest - le répertoire de destination
  */
-function createIndexHTMLFile (indexOrig, path){
-    if(!fs.existsSync(path))
-        fs.mkdirSync(path);
+function createIndexHTMLFile (indexOrig, pathDest){
+    if(!fs.existsSync(pathDest))
+        fs.mkdirSync(pathDest);
 
     if (!fs.existsSync(indexOrig))
         throw "fichier '" + indexOrig + "' introuvable";
 
-    var indexOrigFile = fs.readFileSync(indexOrig, "utf8").replace(/>\s+</gi, "><").replace(/<!--CONCATIFICATION-->(<.*?>)<!--\/CONCATIFICATION-->/gmi, "");
+    INDEXFILENAME = path.parse(indexOrig).base;
 
-    fs.writeFileSync(path + "/index.html",indexOrigFile);
+    var indexOrigFile = fs.readFileSync(indexOrig, "utf8");
 
-    /* "<!DOCTYPE html>\n" +
-        "<html lang='fr'>\n" +
-        "\t<head>\n" +
-        "\t\t<meta charset='UTF-8'>\n" +
-        "\t\t<meta name='viewport' content='width=device-width, initial-scale=1'>\n" +
-        "\t\t<title>index.html</title>\n" +
-        "\t</head>\n" +
-        "\t<body>\n" +
-        "\t</body>\n" +
-        "</html>", "utf8");*/
+    //SUPPRESSION DES ESPACES INUTILES ENTRE LES BALISES
+    indexOrigFile = indexOrigFile.replace(REGEXPSPACEBETWEENTAGS, "><");
+    //SUPPRESSION DES SAUTS DE LIGNE ET DES RETOUR CHARIOT
+    indexOrigFile = indexOrigFile.replace(REGEXPNEWLINE, "");
+    //SUPRESSION DES BALISES CONCATIFICATION
+    indexOrigFile = indexOrigFile.replace(REGEXPINNERCONCATTAG, "");
+    //SUPPRESSION DES BALISES DE COMMENTAIRE
+    indexOrigFile = indexOrigFile.replace(REGEXPINNERCOMMENTTAG, "");
+
+    fs.writeFileSync(pathDest + "/index.html",indexOrigFile);
 }
 
 /**
@@ -118,8 +127,8 @@ function insertStyle (path, stylePath) {
 
     if (posHead !== -1){
         html = html.replace("</head>",
-            "\t<link rel='stylesheet' href='" + normalizePath(stylePath) + "' >\n" +
-            "\t</head>");
+            "<link rel='stylesheet' href='" + normalizePath(stylePath) + "' >" +
+            "</head>");
 
         fs.writeFileSync(path, html, "utf8");
     }
@@ -140,8 +149,8 @@ function insertScript(path, scriptPath){
 
     if (posHead !== -1){
         html = html.replace("</body>",
-            "\t<script src='" + normalizePath(scriptPath) + "'></script>\n" +
-            "\t</body>");
+            "<script src='" + normalizePath(scriptPath) + "'></script>" +
+            "</body>");
 
         fs.writeFileSync(path, html, "utf8");
     }
@@ -158,6 +167,7 @@ function insertScript(path, scriptPath){
 function duplicateFolder(origPath, destPath) {
     origPath = path.normalize(origPath);
     destPath = path.normalize(destPath);
+    var destPathOrig = path.normalize(destPath);
 
     origPath
         .replace("src\\", "")
@@ -168,44 +178,43 @@ function duplicateFolder(origPath, destPath) {
         .forEach(function (val) {
             destPath += "\\" + val;
 
-            if (!fs.existsSync(destPath))
+            //CRÉATION DE L'ORBORESCENCE
+            if (!fs.existsSync(destPath) && val !== SRCFOLDERNAME)
                 fs.mkdirSync(destPath);
     });
 
-    fs.readdirSync(origPath)
-        .forEach(function (val) {
-            try {
-                fs.linkSync(origPath + "\\" + val, destPath + "\\" + val);
-            } catch (e) {
-                if (e.code === "EEXIST"){
-                    console.warn("le fichier " + destPath + "\\" + val + " existe déjà.");
+    if (isDuplicableFolder(origPath)){
+        fs.readdirSync(origPath)
+            .forEach(function (val) {
+                var newPathOrig = origPath + "\\" + val;
+
+                if (fs.statSync(newPathOrig).isFile()){
+                    try {
+                        if (val !== INDEXFILENAME && val !== IGNORENAME){
+                            //COPIE DES FICHIERS
+                            fs.linkSync(newPathOrig, destPath + "\\" + val);
+                        }
+                    } catch (e) {
+                        if (e.code === "EEXIST")
+                            console.warn("le fichier " + destPath + "\\" + val + " existe déjà.");
+                        else
+                            console.warn("Erreur", e);
+                    }
                 }
-            }
-        });
-
-/*    if(isDuplicableFolder(origPath)){
-        //PAS DE FICHIER .ignore
-        if (!fs.existsSync(destPath))
-            fs.mkdirSync(destPath);
-
-        fs.linkSync(origPath, destPath);
+                else{
+                    isDuplicableFolder(newPathOrig) && duplicateFolder(newPathOrig, destPathOrig);
+                }
+            });
     }
-    else{
-        //FICHIER .ignore TROUVÉ
-    }*/
-}
-
-function moveToDist() {
-
 }
 
 /**
  * (SYNC) VÉRIFIE SI LE RÉPERTOIRE EST À PRENDRE EN COMPTE, C'EST À DIRE QU'IL NE DOIT PAS CONTENIR UN FICHIER .'ignore'
- * @param {string} path - répertoire à tester
+ * @param {string} folderPath - répertoire à tester
  * @returns {boolean}
  */
-function isDuplicableFolder(path){
-    return !fs.existsSync(trimFolderPath(path) + "/.ignore");
+function isDuplicableFolder(folderPath){
+    return !fs.existsSync(path.normalize(folderPath) + "\\.ignore");
 }
 
 /**
@@ -230,27 +239,28 @@ function trimFolderPath(path){
  * @returns {Array} tableau de chemins
  */
 function innerConcatification(path){
-    var html = fs.readFileSync(path, "utf8").replace(/>\s+</gi, "><");
-    var concatArr = html.match(/<!--CONCATIFICATION-->(<.*?>)<!--\/CONCATIFICATION-->/gmi);
+    var html = fs.readFileSync(path, "utf8").replace(REGEXPSPACEBETWEENTAGS, "><").replace(REGEXPNEWLINE, "");
+    var concatArr = html.match(REGEXPINNERCONCATTAG);
 
-    if (concatArr !== null){
-        var ret = [];
+    console.log("nombre de balises CONCATIFICATION trouvées", concatArr.length);
+
+    var ret = [];
+
+      if (concatArr !== null){
 
         concatArr.forEach(function (val, ind, arr) {
             val.split(/(<.*?>)/)
                 .filter(function (v) {
-                    return v !== "" && v !== "<!--CONCATIFICATION-->" && v !== "<!--/CONCATIFICATION-->" && v!== "</script>";
+                    //SUPPRESSION DES CHAINES VIDES, DES BALISE DE COMMENTAIRES ET DES BALISES FERMANTES
+                    return v !== "" && v.match(/<!--|<\//gim) === null;
                 })
                 .forEach(function (val, ind, arr) {
                     ret.push(val);
                 });
         });
+      }
 
-        return ret;
-    }
-    else{
-        return [];
-    }
+    return ret;
 }
 
 /**
@@ -263,7 +273,7 @@ function extractScriptPath(strTag){
 
     if (strTag.indexOf("<script") === 0 && src !== null) {
         var ret = src[0]
-            .match(/["|'].*?["|']/)[0]
+            .match(REGEXPSTRINGINSTRING)[0]
             .replace(/["|']/g, "");
 
         return normalizePath(ret)
@@ -280,7 +290,7 @@ function extractStylePath (strTag) {
 
     if (strTag.indexOf("<link") === 0 && strTag.match(/rel=["|']stylesheet["|']/i) !== null && href !== null) {
         var ret = href[0]
-            .match(/["|'].*?["|']/)[0]
+            .match(REGEXPSTRINGINSTRING)[0]
             .replace(/["|']/g, "");
 
         return normalizePath(ret)
@@ -318,6 +328,14 @@ function getStylesPath(tagList) {
     }).map(extractStylePath);
 }
 
+/**
+ * INTIALISE LE NOM DU DOSSIER DES SOURCES
+ * @param {string} srcPath
+ */
+function setSrcFolderName(srcPath){
+    SRCFOLDERNAME = path.parse(path.normalize(srcPath.trim())).name;
+}
+
 module.exports.deleteFuckingFolder = deleteFuckingFolder;
 module.exports.createIndexHTMLFile = createIndexHTMLFile;
 module.exports.insertStyle = insertStyle;
@@ -326,3 +344,4 @@ module.exports.innerConcatification = innerConcatification;
 module.exports.getScriptsPath = getScriptsPath;
 module.exports.getStylesPath = getStylesPath;
 module.exports.duplicateFolder = duplicateFolder;
+module.exports.setSrcFolderName = setSrcFolderName;

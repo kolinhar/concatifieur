@@ -7,6 +7,7 @@ var cleanCSS = require('gulp-clean-css');
 
 // Variables de chemins
 var source = './src'; // dossier de travail
+fctPerso.setSrcFolderName(source);
 var destination = './dist'; // dossier à livrer
 
 gulp.task('default', function() {
@@ -20,6 +21,9 @@ gulp.task('concatification', function(){
 
     fctPerso.createIndexHTMLFile(source + "/index.html", destination);
     console.log("création du fichier index.html terminée.");
+    //MISE EN 'PROD'
+    fctPerso.duplicateFolder(source, destination);
+    console.log("copie des fichiers terminée");
 
     var TagsList = fctPerso.innerConcatification(source + "/index.html");
 
@@ -81,5 +85,7 @@ gulp.task('concatification', function(){
 });
 
 gulp.task('testFct', function () {
-    fctPerso.duplicateFolder(source + "/scripts/workers/", destination);
+    //path = require("path");
+    //console.log(path.parse(path.normalize(source)).name);
+    //console.log(path.parse(path.normalize(source + "/images")));
 });

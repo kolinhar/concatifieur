@@ -9,6 +9,7 @@
     <link rel="icon" type="image/png" href="images/rocket.png" sizes="64x64" />
 
     <!--CONCATIFICATION-->
+
     <link rel="stylesheet" href="styles/bootstrap.css" />
     <link rel="stylesheet" href="styles/style-designer.css" />
     <link rel="stylesheet" href="styles/angucomplete-alt.css" />
@@ -20,33 +21,37 @@
     <link rel="stylesheet" href="styles/leaflet.css" />
     <link rel="stylesheet" href="styles/leaflet.label.css" />
     <link rel="stylesheet" href="styles/MarkerCluster.css" />
+    <link rel="stylesheet" href="styles/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="styles/jquery-ui.css" />
+    <link rel="stylesheet" href="styles/jquery-ui.structure.css" />
 
-    <script src="scripts/Adependances/jquery.js"></script>
-    <script src="scripts/Adependances/angular.js"></script>
-    <script src="scripts/Adependances/leaflet.js"></script>
-    <script src="scripts/Adependances/angular-leaflet-directive.min.js"></script>
-    <script src="scripts/Adependances/leaflet.label.js"></script>
-    <script src="scripts/Adependances/leaflet.markercluster.js"></script>
+    <script src="scripts/Libs/jquery.js"></script>
+    <script src="scripts/Libs/angular.js"></script>
+    <script src="scripts/Libs/leaflet.js"></script>
+    <script src="scripts/Libs/angular-leaflet-directive.min.js"></script>
+    <script src="scripts/Libs/leaflet.label.js"></script>
+    <script src="scripts/Libs/leaflet.markercluster.js"></script>
 
-    <script src="scripts/Adependances/angular-animate.min.js"></script>
-    <script src="scripts/Adependances/angular-locale_fr-fr.js"></script>
-    <script src="scripts/Adependances/angular-route.js"></script>
-    <script src="scripts/Adependances/angular-cookies.js"></script>
-    <script src="scripts/Adependances/angular-touch.js"></script>
-    <script src="scripts/Adependances/bootstrap.js"></script>
-    <script src="scripts/Adependances/angucomplete-alt.js"></script>
-    <script src="scripts/Adependances/angular-datepicker.js"></script>
-    <script src="scripts/Adependances/highcharts.js"></script>
-    <script src="scripts/Adependances/angular-sanitize.min.js"></script>
-    <script src="scripts/Adependances/marked.js"></script>
-    <script src="scripts/Adependances/angular-marked.min.js"></script>
-    <script src="scripts/Adependances/notify.js"></script>
+    <script src="scripts/Libs/angular-animate.min.js"></script>
+    <script src="scripts/Libs/angular-locale_fr-fr.js"></script>
+    <script src="scripts/Libs/angular-route.js"></script>
+    <script src="scripts/Libs/angular-cookies.js"></script>
+    <script src="scripts/Libs/angular-touch.js"></script>
+    <script src="scripts/Libs/bootstrap.js"></script>
+    <script src="scripts/Libs/angucomplete-alt.js"></script>
+    <script src="scripts/Libs/angular-datepicker.js"></script>
+    <script src="scripts/Libs/highcharts.js"></script>
+    <script src="scripts/Libs/angular-sanitize.min.js"></script>
+    <script src="scripts/Libs/marked.js"></script>
+    <script src="scripts/Libs/angular-marked.min.js"></script>
+    <script src="scripts/Libs/notify.js"></script>
 
-    <script src="scripts/Adependances/angular-material.min.js"></script>
-    <script src="scripts/Adependances/jquery-ui.js"></script>
-    <script src="scripts/Adependances/jqAutocomplete.js"></script>
-    <script src="scripts/Adependances/FctBase.js"></script>
-    <script src="scripts/Adependances/app.js"></script>
+    <script src="scripts/Libs/angular-material.min.js"></script>
+    <script src="scripts/Libs/jquery-ui.js"></script>
+    <script src="scripts/Libs/jqAutocomplete.js"></script>
+
+    <script src="scripts/Libs/FctBase.js"></script>
+    <script src="scripts/Libs/app.js"></script>
     <!--/CONCATIFICATION-->
 </head>
 
@@ -98,21 +103,22 @@
     <script src="http://comet.ariane.st.sncf.fr/Scripts/jquery.signalR-2.2.0.min.js"></script>
     <script src="http://comet.ariane.st.sncf.fr/signalr/hubs" type="text/javascript"></script>
 
+    <!--test-->
 
 <!--
-    PROD-->
-
+PROD
     <script src="http://x18srhrgcb7:8044/cartographie/factories.js"></script>
     <script src="http://x18srhrgcb7:8044/cartographie/services.js"></script>
-    <script src="http://x18srhrgcb7:8044/cartographie/cartographie.js"></script>
-<!--
-    LOCAL
-
-    <script src="scripts/factories/carto/factories.js"></script>
-    <script src="scripts/services/carto/services.js"></script>
-    <script src="scripts/controllers/carto/cartographie.js"></script>-->
+    <script src="http://x18srhrgcb7:8044/cartographie/cartographie.js"></script>-->
 
     <!--CONCATIFICATION-->
+
+    <!--
+        LOCAL-->
+    <script src="scripts/factories/carto/factories.js"></script>
+    <script src="scripts/services/carto/services.js"></script>
+    <script src="scripts/controllers/carto/cartographie.js"></script>
+
     <script src="scripts/directives/affectation/ar-affectation.js"></script>
     <script src="scripts/providers/providers.js"></script>
     <script src="scripts/values/values.js"></script>
@@ -157,16 +163,12 @@
     <script src="scripts/controllers/notification/controllers.js"></script>
     <script src="scripts/controllers/enquete/controllers.js"></script>
     <script src="scripts/controllers/upload/controllers.js"></script>
-
-    <link rel="stylesheet" href="styles/MarkerCluster.Default.css" />
-    <link rel="stylesheet" href="styles/jquery-ui.css" />
-    <link rel="stylesheet" href="styles/jquery-ui.structure.css" />
-
     <script src="scripts/MongoDB/values.js"></script>
     <script src="scripts/MongoDB/services.js"></script>
     <script src="scripts/MongoDB/factories.js"></script>
-    <script src="scripts/Adependances/fr_FR.js"></script>
+    <script src="scripts/Libs/fr_FR.js"></script>
     <!--/CONCATIFICATION-->
+
 </body>
 
 </html>

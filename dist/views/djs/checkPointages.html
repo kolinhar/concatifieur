@@ -1,0 +1,108 @@
+<div>
+    <label class="text-center">
+        Pointages<span ng-if="ptgjour"> de {{ptgjour.agentName}}</span>
+    </label>
+
+    <nav ng-if="ptgjour" class="col-md-12 text-center">
+        <ul class="pagination">
+            <li>
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourPrecedent}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li><a>{{ptgjour.datePointage | date:'dd MMMM yyyy'}}</a>  </li>
+            <li>
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSuivant}}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li ng-class="{active:routeParams.datePointage === jourSemaine[0].dateFr}">
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSemaine[0].dateFr}}">{{jourSemaine[0].date.getDate()}}</a>
+            </li>
+            <li ng-class="{active:routeParams.datePointage === jourSemaine[1].dateFr}">
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSemaine[1].dateFr}}">{{jourSemaine[1].date.getDate()}}</a>
+            </li>
+            <li ng-class="{active:routeParams.datePointage === jourSemaine[2].dateFr}">
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSemaine[2].dateFr}}">{{jourSemaine[2].date.getDate()}}</a></li>
+            <li ng-class="{active:routeParams.datePointage === jourSemaine[3].dateFr}">
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSemaine[3].dateFr}}">{{jourSemaine[3].date.getDate()}}</a>
+            </li>
+            <li ng-class="{active:routeParams.datePointage === jourSemaine[4].dateFr}">
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSemaine[4].dateFr}}">{{jourSemaine[4].date.getDate()}}</a>
+            </li>
+            <li ng-class="{active:routeParams.datePointage === jourSemaine[5].dateFr}">
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSemaine[5].dateFr}}">{{jourSemaine[5].date.getDate()}}</a>
+            </li>
+            <li ng-class="{active:routeParams.datePointage === jourSemaine[6].dateFr}">
+                <a ng-href="#/pointages/check/{{routeParams.idUser}}/{{jourSemaine[6].dateFr}}">{{jourSemaine[6].date.getDate()}}</a>
+            </li>
+
+        </ul>
+    </nav>
+
+    <hr ng-if="ptgjour !== undefined"/>
+
+</div>
+
+<div class="col-md-12">
+    <p class="text-center">
+        <label>
+            Miroir Agadir
+        </label>
+    </p>
+    <div  style="position: relative;">
+        <table class="table">
+            <thead class="violet">
+            <tr>
+                <th colspan="4" class="text-center col-md-6">Agadir</th>
+                <th colspan="4" class="text-center col-md-6">Ariane</th>
+            </tr>
+            <tr>
+                <th>Projet</th>
+                <th>Fiche</th>
+                <th>Travail réalisé</th>
+                <th>Durée</th>
+                <th>Projet</th>
+                <th>Fiche</th>
+                <th>Travail réalisé</th>
+                <th>Durée</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="ligne in datas.pointagesAll" ng-class="{success : ligne.isSame, danger : !ligne.isSame}" >
+                <td class="text-center" colspan="4" ng-if="ligne.ptgAga === null">
+                    <button class="btn btn-blue-lighter col-md-8 col-md-offset-2" ng-click="AddPtgAgadir(ligne.ptgAri)">
+                        Ajouter dans Agadir
+                    </button>
+                </td>
+                <td ng-if="ligne.ptgAga !== null">{{ligne.ptgAga.projet}}</td>
+                <td ng-if="ligne.ptgAga !== null">
+                    <span ng-class="{label: datas.fiche[ligne.ptgAga.idFiche].isCloture, 'label-cloture': datas.fiche[ligne.ptgAga.idFiche].isCloture}">
+                        <a href="#/fiche/{{ligne.ptgAga.annee}}/{{ligne.ptgAga.nfiche}}">{{ligne.ptgAga.nfiche}}</a>
+                    </span>
+                </td>
+                <td ng-if="ligne.ptgAga !== null">{{ligne.ptgAga.nature}}</td>
+                <td ng-if="ligne.ptgAga !== null">{{ligne.ptgAga.temps}}</td>
+                <td>{{ligne.ptgAri.projet}}</td>
+                <td>
+                    <span ng-class="{label: datas.fiche[ligne.ptgAri.idFiche].isCloture, 'label-cloture': datas.fiche[ligne.ptgAri.idFiche].isCloture}">
+                        <a href="#/fiche/{{ligne.ptgAri.annee}}/{{ligne.ptgAri.nFiche}}">{{ligne.ptgAri.nFiche}}</a>
+                    </span>
+                </td>
+                <td>{{ligne.ptgAri.nature}}</td>
+                <td>{{ligne.ptgAri.duree | date:"HH'h'mm"}}</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="loading"
+             ng-class="{ flex: ptgjour.isLoading }"
+             ng-hide="!ptgjour.isLoading">
+            <div></div>
+        </div>
+    </div>
+</div>
+
+
+<article ng-include="'views/ficheAgadir/modalPointage.html'"></article>
+<article ng-include="'views/NuitAstreinte/modalNuitAstreinte.html'"></article>
+<article ng-include="'views/journeePointage/modalSignalPtg.html'"></article>

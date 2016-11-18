@@ -1,0 +1,209 @@
+<section>
+    <article style="position: relative">
+        <fieldset>
+            <legend>
+                <h2>
+                    <span class="label label-default pull-left" title="{{affairenum.datas.titre}}">
+                        <input type="text"
+                               ng-model="affairenum.datas.titre"
+                               class="nopadding no-margin"
+                               style="background-color: inherit; border-style: none; border-color: inherit; max-width: 720px" />
+                    </span>
+                    <span class="pull-left">&nbsp;</span>
+                    <span class="label label-warning pull-left"
+                          ng-if="affairenum.datas.isCloture">Clôturée</span>
+                    <span class="label label-default pull-right">
+                        <input type="number"
+                               min="1"
+                               step="1"
+                               ng-model="affairenum.datas.heuresTotal"
+                               class="nopadding no-margin form-inline"
+                               style="background-color: inherit; display: inline; border-style: none; border-color: inherit; width: 90px"/> <span>Heure{{(affairenum.datas.heuresTotal > 1 ? 's' : '')}}</span>
+                        <span ng-if="affairenum.datas.minutesTotalRestante !== '00'">{{affairenum.datas.minutesTotalRestante}}</span>
+                    </span>
+                    <span class="pull-right">&nbsp;</span>
+                    <span ng-if="affairenum.datas.minutesConsomme >= affairenum.datas.minutesTotal"
+                          class="label label-danger pull-right">QUOTA ATTEINT</span>
+                </h2>
+            </legend>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="progress" title="Avancement {{affairenum.nbFicheClotureePercent}}%">
+                        <div ng-class="{'progress-bar-success': affairenum.nbFicheClotureePercent >= 100, 'progress-bar-info': affairenum.nbFicheClotureePercent < 100}" class=" text-center" aria-valuenow="{{affairenum.nbFicheClotureePercent}}" aria-valuemin="0" aria-valuemax="100" style="width: {{affairenum.nbFicheClotureePercent}}%;">
+                            <nobr>{{affairenum.nbFicheCloturee}} / {{affairenum.nbFicheTot}}</nobr>
+                        </div>
+                    </div>
+
+                    <table class="table">
+                        <thead class="blue">
+                            <tr>
+                                <th>Postes</th>
+                                <th>Fiches</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="ligne in affairenum.datas.postes">
+                                <td>
+                                    <a ng-href="#/gestionFiches/recherche?materiel={{ligne.fiche.materiel}}&isCloture=false">{{ligne.fiche.materiel}}</a>
+                                </td>
+                                <td>
+                                    <a ng-href="#/fiche/{{ligne.fiche.dateDebut|date:'yyyy'}}/{{ligne.fiche.numero || ligne.fiche.numeroMongo}}" ng-class="{label: ligne.fiche.isCloture, 'label-cloture': ligne.fiche.isCloture}">{{ligne.fiche.numero || ligne.fiche.numeroMongo}}</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-8">
+                    <figure id="graphConso"
+                            style="width: calc(100% - 230px)"></figure>
+                </div>
+
+                <div class="col-md-12">
+                    <label>Projet :</label>
+                    <input type="text" class="form-control" ng-value="affairenum.datas.projet" readonly="readonly"/>
+                </div>
+
+                <div class="col-md-4">
+                    <label>Demandeur :</label>
+                    <input type="text" ng-value="affairenum.datas.demandeur" class="form-control" readonly="readonly"/>
+                </div>
+
+                <div class="col-md-4">
+                    <label>Agent :</label>
+                    <input type="text" ng-value="affairenum.datas.agent" class="form-control" readonly="readonly"/>
+                </div>
+
+                <div class="col-md-4">
+                    <label>Suivi par :</label>
+                    <select class="form-control"
+                            ng-model="affairenum.datas.suiviPar"
+                            ng-options="agent.cp as agent.nomPrenom for agent in affairenum.AgentsListSuivi"></select>
+                </div>
+
+                <div class="col-md-12">
+                    <label>Description :</label>
+                    <textarea readonly="readonly" class="form-control" rows="10">{{affairenum.datas.description}}</textarea>
+                </div>
+
+                <div class="col-md-12">&nbsp;</div>
+
+                <div class="text-center col-md-12">
+                    <div class="btn-group">
+                        <button class="btn btn-blue"
+                                ng-if="affairenum.datas.isCloture === false"
+                                ng-click="affairenum.Update()">Enregistrer
+                    </button>
+                        <button class="btn btn-blue"
+                                ng-if="affairenum.datas.isCloture"
+                                ng-click="affairenum.Update(false)">Déclôturer
+                        </button>
+                        <button class="btn btn-blue"
+                                ng-if="affairenum.datas.isCloture === false && affairenum.nbFicheClotureePercent === 100"
+                                ng-click="affairenum.Update(true)">Clôturer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset ng-controller="AffairePointage"
+                  style="position: relative"
+                  ng-if="!affairenum.datas.isCloture">
+            <legend>Ajouter un pointage</legend>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group" ng-class="{'has-error': affairepointage.Pointage.errDesc}">
+                        <label class="control-label">Travail réalisé :</label>
+                <textarea rows="8"
+                          class="form-control"
+                          maxlength="1000"
+                          ng-model="affairepointage.Pointage.TravailRealise"
+                          required></textarea>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="form-group"
+                         ng-class="{'has-error': affairepointage.Pointage.errDuree}">
+                        <label class="control-label">Durée (en minutes) :</label>
+                        <input type="number"
+                               step="3"
+                               min="3"
+                               max="465"
+                               class="form-control"
+                               ng-model="affairepointage.Pointage.DureeMinutes"
+                               required/>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="form-group" ng-class="{'has-error': affairepointage.Pointage.errDate}">
+                        <label class="control-label">Date :</label>
+
+                        <div class="input-form date">
+                            <input type="text"
+                                   id="datetimepicker3"
+                                   class="form-control"
+                                   placeholder="JJ/MM/AAAA"
+                                   ng-model="affairepointage.Pointage.DatePointage"
+                                   pick-a-date="date"
+                                   pick-a-date-options="{ format: 'dd/mm/yyyy' }"
+                                   required/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <p class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-blue form-control"
+                                ng-click="affairepointage.AddPointage()">Valider
+                        </button>
+                    </p>
+                </div>
+            </div>
+
+            <div class="loading" ng-class="{ flex: affairepointage.isLoading }" ng-hide="!affairepointage.isLoading">
+                <div></div>
+            </div>
+
+        </fieldset>
+
+        <fieldset>
+            <legend>Pointages</legend>
+            <table class="table">
+                <thead class="violet">
+                    <tr>
+                        <th>Date</th>
+                        <th>Agent</th>
+                        <th>Fiche</th>
+                        <th>Durée</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="ligne in affairenum.datas.pointages">
+                        <td>
+                            <a ng-href="#/gestionFiches/recherche?dateDebut={{ligne.date|date:'dd/MM/yyyy'}}&dateFin={{ligne.dateFin|date:'dd/MM/yyyy'}}">{{ligne.date|date:'dd/MM/yyyy'}}</a>
+                        </td>
+                        <td>
+                            <a ng-href="#/gestionFiches/recherche?agent={{ligne.cp}}">{{ligne.nomPrenom}}</a>
+                        </td>
+                        <td>
+                            <a ng-href="#/fiche/{{ligne.anneeFiche}}/{{ligne.numFiche}}">{{ligne.numFiche}}</a>
+                        </td>
+                        <td>{{ligne.duree|date:"HH'h'mm"}}</td>
+                        <td>{{ligne.commentaire}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </article>
+    <div class="loading"
+         ng-class="{ flex: affairenum.isLoading }"
+         ng-hide="!affairenum.isLoading">
+        <div></div>
+    </div>
+</section>

@@ -1,0 +1,585 @@
+<fieldset
+        ng-disabled="ficheagadir.anneeInt < (todayYear-1) || (ficheagadir.routeParams.region !== undefined && ficheagadir.routeParams.region !== Region.toString())"
+        class="hidden-print">
+    <div name="myForm" class="row">
+        <fieldset ng-show="ficheagadir.routeParams.numFiche!==undefined">
+            <legend>
+                <img ng-src={{datas.fiche.canal}} width="25px" height="25px" title="{{datas.fiche.nomCanal}}"/>
+                Fiche N°{{datas.fiche.numFiche}}&nbsp;&nbsp;
+                <img ng-if="(RetNumService.isWorking.indexOf(datas.fiche.numFiche) > -1 || RetNumService.isWorking.indexOf('R'+datas.fiche.numeroMongo.toString() + datas.fiche.numeroAutreRegion.toString()) > -1) && datas.fiche.errAgadir === null" src= "./images/spin.svg" width="25px" height="25px"/>
+
+                <span ng-if="datas.fiche.errAgadir !== null" class="text-danger">
+                    {{datas.fiche.errAgadir.split('(')[0]}}
+                </span>
+
+				<!--AFFICHAGE DES ÉTOILES-->
+                <span ng-controller="NoteFiche"
+                      title="{{notefiche.datas.fiche.Note == -1 ? notefiche.datas.fiche.Libelle : notefiche.datas.fiche.Commentaire !== undefined ? notefiche.datas.fiche.QuestionsTitle + '\n' + notefiche.datas.fiche.Commentaire : notefiche.datas.fiche.QuestionsTitle}}"
+                      ng-show="notefiche.datas.fiche.Note !== null && notefiche.datas.fiche.Note !== 0">
+                        <span class="glyphicon" ng-class="{'glyphicon-star-empty orange-etoile': notefiche.datas.fiche.Note < 1, 'glyphicon-star orange-etoile': notefiche.datas.fiche.Note >= 1, 'glyphicon-star-empty grey-etoile': notefiche.datas.fiche.Note === -1}"></span>
+                        <span class="glyphicon" ng-class="{'glyphicon-star-empty orange-etoile': notefiche.datas.fiche.Note < 2, 'glyphicon-star orange-etoile': notefiche.datas.fiche.Note >= 2, 'glyphicon-star-empty grey-etoile': notefiche.datas.fiche.Note === -1}"></span>
+                        <span class="glyphicon" ng-class="{'glyphicon-star-empty orange-etoile': notefiche.datas.fiche.Note < 3, 'glyphicon-star orange-etoile': notefiche.datas.fiche.Note >= 3, 'glyphicon-star-empty grey-etoile': notefiche.datas.fiche.Note === -1}"></span>
+                        <span class="glyphicon" ng-class="{'glyphicon-star-empty orange-etoile': notefiche.datas.fiche.Note < 4, 'glyphicon-star orange-etoile': notefiche.datas.fiche.Note >= 4, 'glyphicon-star-empty grey-etoile': notefiche.datas.fiche.Note === -1}"></span>
+                        <span class="glyphicon" ng-class="{'glyphicon-star-empty orange-etoile': notefiche.datas.fiche.Note < 5, 'glyphicon-star orange-etoile': notefiche.datas.fiche.Note >= 5, 'glyphicon-star-empty grey-etoile': notefiche.datas.fiche.Note === -1}"></span>
+                </span>
+
+                <button ng-if="datas.fiche.numero === undefined && datas.fiche.canal === 'easti'"
+                        class="btn btn-danger"
+                        ng-click="ficheagadir.ForcerCreation()"><b>Créer dans AGADIR</b></button>
+                <span class="label label-cloture"
+                      ng-if="datas.fiche.isCloture === true">Clôturée</span>
+                <span class="label label-warning"
+                      ng-if="datas.fiche.isTransferee === true">
+                    Transférée à la région {{datas.fiche.nomRegion}} avec le numéro {{datas.fiche.numeroAutreRegion}}
+                </span>
+                <span class="label label-danger"
+                      ng-if="datas.fiche.isUrgent === true">Urgent</span>
+                <small ng-if="datas.fiche.numAffaire">
+                    , liée à l'affaire <a ng-href="#/affaire/lire/{{ficheagadir.routeParams.annee}}/{{datas.fiche.numAffaire}}">{{datas.fiche.numAffaire}}</a>
+                </small>
+            </legend>
+        </fieldset>
+
+        <div class="row col-md-6">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Poste :</label>
+                    <span ng-if="ficheagadir.routeParams.numFiche !== undefined">
+                    <!--
+    OBLIGÉ DE PRÉCISER L'ATTRIBUT "initial-value" CAR L'ATTRIBUT "selected-object" N'EST PAS BINDÉ AU MODÈLE...
+    "initial-value" N'EST UTILISABLE QU'UNE SEULE FOIS, ENSUITE ELLE N'EST PLUS BINDÉE
+    -->
+                        <angucomplete-alt
+                                id="posteAutocompleteInput"
+                                input-class="form-control"
+                                selected-object="datas.fiche.materiel"
+                                initial-value="{{datas.fiche.materiel}}"
+                                remote-url="{{DIURLAPI.URLGemini + 'materiel/'}}"
+                                remote-url-data-field="L_Resultats"
+                                search-fields="calife"
+                                title-field="calife"
+                                description-field="description"
+                                pause="400"
+                                match-class="bold"
+                                minlength="1"
+                                text-no-results="Aucun résultat"
+                                text-searching="Recherche en cours..."
+                                template-url="views/ficheAgadir/PosteAutocomplete.html"
+                                field-tabindex="1"></angucomplete-alt>
+                    </span>
+
+                    <span ng-if="ficheagadir.routeParams.numFiche === undefined">
+                        <angucomplete-alt
+                                id="posteAutocompleteInput"
+                                input-class="form-control"
+                                selected-object="datas.fiche.materiel"
+                                initial-value="{{datas.fiche.materiel.title}}"
+                                remote-url="{{DIURLAPI.URLGemini + 'materiel/'}}"
+                                remote-url-data-field="L_Resultats"
+                                search-fields="calife"
+                                title-field="calife"
+                                description-field="description"
+                                pause="400"
+                                match-class="bold"
+                                minlength="1"
+                                text-no-results="Aucun résultat"
+                                text-searching="Recherche en cours..."
+                                template-url="views/ficheAgadir/PosteAutocomplete.html"
+                                field-tabindex="1"></angucomplete-alt>
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Demandeur :</label>
+
+                    <span ng-if="ficheagadir.routeParams.numFiche !== undefined">
+                        <angucomplete-alt
+                                id="agentAutocompleteInput"
+                                input-class="form-control"
+                                selected-object="datas.fiche.demandeur"
+                                initial-value="{{datas.fiche.demandeur}}"
+                                remote-url="{{DIURLAPI.URLapiRemote + 'agent/recherche/all/'}}"
+                                remote-url-data-field="L_Resultats"
+                                remote-url-response-formatter="FCTFORMATRESP"
+                                title-field="display"
+                                description-field="cp"
+                                search-fields="display, cp"
+                                pause="400"
+                                match-class="bold"
+                                minlength="3"
+                                text-no-results="Aucun résultat"
+                                text-searching="Recherche en cours..."
+                                template-url="views/ficheAgadir/DemandeurAutocomplete.html"
+                                field-tabindex="2"></angucomplete-alt>
+                    </span>
+
+                    <span ng-if="ficheagadir.routeParams.numFiche === undefined">
+                        <angucomplete-alt
+                                id="agentAutocompleteInput"
+                                input-class="form-control"
+                                selected-object="datas.fiche.demandeur"
+                                initial-value="{{datas.fiche.demandeur.title}}"
+                                remote-url="{{DIURLAPI.URLapiRemote + 'agent/recherche/all/'}}"
+                                remote-url-data-field="L_Resultats"
+                                remote-url-response-formatter="FCTFORMATRESP"
+                                title-field="display"
+                                description-field="cp"
+                                search-fields="display, cp"
+                                pause="400"
+                                match-class="bold"
+                                minlength="3"
+                                text-no-results="Aucun résultat"
+                                text-searching="Recherche en cours..."
+                                template-url="views/ficheAgadir/DemandeurAutocomplete.html"
+                                field-tabindex="2"></angucomplete-alt>
+                    </span>
+                </div>
+
+                <!--<pre>{{datas.fiche.demandeur|json}}</pre>-->
+
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Description :</label>
+                    <textarea ng-model="datas.fiche.description"
+                              class="form-control"
+                              ng-trim="false"
+                              maxlength="2000"
+                              rows="9"
+                              tabindex="3"></textarea>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+            <div>
+                <ul class="nav nav-tabs nav-justified">
+                    <li class="active">
+                        <a aria-controls="coord"
+                           href="#coord"
+                           onclick="return false"
+                           role="tab"
+                           data-toggle="tab"
+                           tabindex="30">Infos utilisateur</a>
+                    </li>
+                    <li>
+                        <a aria-controls="histo"
+                           href="#histo"
+                           onclick="return false"
+                           role="tab"
+                           data-toggle="tab"
+                           tabindex="31">Historique du poste ({{histoPoste.datas.liste.length}})</a>
+                    </li>
+                    <li ng-class="{'bg-danger' : santeParc.datas.livePoste.posteAD === false || santeParc.datas.liveCompte.isRegistered === false}">
+                        <a aria-controls="sante"
+                           href="#sante"
+                           onclick="return false"
+                           role="tab"
+                           data-toggle="tab"
+                           tabindex="32">Santé du poste</a>
+                    </li>
+                    <!--<li ng-if="ficheagadir.routeParams.numFiche!==undefined">-->
+                        <!--<a aria-controls="upload"-->
+                           <!--href="#upload"-->
+                           <!--onclick="return false"-->
+                           <!--role="tab"-->
+                           <!--data-toggle="tab"-->
+                           <!--tabindex="33">Fichiers joints ({{ficheagadir.FichiersJoints.ListeFichiers.length}})</a>-->
+                    <!--</li>-->
+                </ul>
+
+                <div class="tab-content" style="max-height: 497px; overflow: auto">
+                    <div class="tab-pane fade in active" id="coord">
+                        <div ng-include="'views/ficheAgadir/coordonneesDemandeur.html'"></div>
+                    </div>
+                    <div class="tab-pane fade" id="histo" style="position: relative">
+                        <div ng-include="'views/ficheAgadir/modalHistoPoste.html'"></div>
+                        <div class="loading" ng-class="{ flex: histoPoste.isLoading }" ng-hide="!histoPoste.isLoading">
+                            <div></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="sante">
+                        <div ng-include="'views/ficheAgadir/modalSante.html'"></div>
+                    </div>
+<!--                    <div ng-if="ficheagadir.routeParams.numFiche!==undefined"
+                         class="tab-pane fade"
+                         id="upload">
+                        <div ng-controller="FileUploader"
+                             ng-include="'views/upload/inputFile.html'"></div>
+                        <hr/>
+                        <div ng-controller="FileLister"
+                             ng-include="'views/upload/listeFichiers.html'"></div>
+                    </div>-->
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Projet :</label>
+                    <span class="input-group">
+                        <angucomplete-alt
+                                id="projectAutocompleteInputFiche"
+                                input-class="form-control angucomplete-decale"
+                                selected-object="datas.fiche.projet"
+                                initial-value="{{datas.fiche.projet.description.intitule}}"
+                                title-field="intitule"
+                                search-fields="intitule"
+                                local-data="ficheagadir.Projects.liste"
+                                pause="0"
+                                match-class="bold"
+                                minlength="1"
+                                text-no-results="Aucun résultat"
+                                text-searching="Recherche en cours..."
+                                template-url="views/ficheAgadir/ProjetAutocomplete.html"
+                                field-tabindex="4"></angucomplete-alt>
+                        <span class="input-group-btn"
+                              title="Liste des projets">
+                            <button class="btn btn-default"
+                                    data-toggle="modal"
+                                    data-target="#ProjetsModal"
+                                    ng-click="ficheagadir.marqueurProjet = 'fiche'"
+                                    tabindex="5">
+                                <span class="glyphicon glyphicon-list"></span>
+                            </button>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+<!--
+UN AGENT NE PEUT PAS MODIFIER L'AFFECTATION D'UNE FICHE SI ELLE NE LUI EST PAS AFFECTÉE, SAUF SI ELLE EST 'NON-AFFECTÉE'
+SEUL UN AGENT QUI A LE STATUS DU/DPX PEUT CHANGER L'AFFECTATION D'UNE FICHE
+-->
+        <div class="col-md-3 col-md-offset-1">
+            <div class="form-group">
+                <label>Agent Affecté :</label>
+                <select class="form-control"
+                        ng-if="(datas.fiche.agent !== '0' && datas.fiche.agent !== cookieStore.get('agent')) || cookieStore.get('status') !== 'Agent'"
+                        ng-model="datas.fiche.agent"
+                        ng-options="agent.cp as agent.nomPrenom for agent in ficheagadir.AgentsList.liste"
+                        ng-disabled="(datas.fiche.agent !== '0' && datas.fiche.agent !== cookieStore.get('agent') && cookieStore.get('status') === 'Agent')"
+                        tabindex="6"></select>
+
+                <select class="form-control"
+                        ng-if="(datas.fiche.agent === '0' || datas.fiche.agent === cookieStore.get('agent')) && cookieStore.get('status') === 'Agent'"
+                        ng-model="datas.fiche.agent"
+                        ng-options="agent.cp as agent.nomPrenom for agent in ficheagadir.AgentsListAgent.liste"
+                        ng-disabled="(datas.fiche.agent !== '0' && datas.fiche.agent !== cookieStore.get('agent') && cookieStore.get('status') === 'Agent')"
+                        tabindex="6"></select>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group">
+                <label>État :</label>
+                <select class="form-control"
+                        ng-model="datas.fiche.etat"
+                        ng-options="label for label in ficheagadir.EtatsList.liste"
+                        tabindex="7"></select>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+          <div ng-if="!datas.fiche.isPrioritaire" class="form-group">
+            <label>Urgence :</label>
+            <select class="form-control"
+                    ng-model="datas.fiche.isUrgent"
+                    ng-options="type.value as type.label for type in ficheagadir.TypesUrgence"
+                    tabindex="8"></select>
+          </div>
+            <div ng-if="datas.fiche.isPrioritaire" class="form-group">
+                <label>Urgence :</label>
+                <select class="form-control yellow">
+                    <option>Fiche prioritaire</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="text-center col-md-12 margin-top-10" ng-show="ficheagadir.routeParams.numFiche!==undefined">
+            <div class="btn-group">
+                <button ng-if="!datas.fiche.isCloture"
+                        class="btn btn-blue"
+                        ng-click="ficheagadir.Update()"
+                        ng-disabled="datas.fiche.demandeur === null || datas.fiche.materiel === null"
+                        title="Enregistre les modifications sur la fiche"
+                        tabindex="9">Enregistrer
+                </button>
+                <button class="btn btn-blue"
+                        ng-click="ficheagadir.Cloturer()"
+                        title="{{datas.fiche.isCloture === true ? 'Déc' : 'C'}}lôture la fiche"
+                        ng-disabled="datas.fiche.demandeur === null || datas.fiche.materiel === null"
+                        tabindex="10">{{datas.fiche.isCloture === true ? "Déc" : "C"}}lôturer
+                </button>
+                <button ng-if="!datas.fiche.isCloture"
+                        class="btn btn-blue"
+                        data-toggle="modal"
+                        data-target="#modalTransfert"
+                        ng-disabled="datas.fiche.demandeur === null || datas.fiche.materiel === null"
+                        title="Transfert la fiche vers une autre région"
+                        tabindex="11">Transférer
+                </button>
+                <button class="btn btn-blue"
+                        ng-click="ficheagadir.Cloner()"
+                        title="Prérempli une nouvelle fiche à partir de celle-ci"
+                        tabindex="12">Cloner</button>
+                <button ng-if="!datas.fiche.isCloture && datas.fiche.numAffaire === null"
+                        class="btn btn-blue"
+                        title="Rattache la fiche à une affaire en cours"
+                        data-toggle="modal"
+                        ng-click="ModalAffaire.reload = ModalAffaire.reload + 1; ModalAffaire.isModal = true;"
+                        data-target="#AffairesModal"
+                        tabindex="13">Rattacher
+                </button>
+                <button class="btn btn-blue"
+                        onclick="window.print()"
+                        title="Imprime la fiche"
+                        tabindex="14">Imprimer</button>
+            </div>
+        </div>
+
+    </div>
+
+    <hr ng-if="datas.fiche.isCloture === true"/>
+
+    <div name="myForm2"
+          class="row"
+          ng-show="ficheagadir.routeParams.numFiche !== undefined && !datas.fiche.isCloture">
+
+        <fieldset class="col-md-12">
+            <legend>Ajouter un pointage</legend>
+            <!--MODIF EFFECTUÉE SOUS LA PRESSION DU PILOTE D'EXPLOITATION POUR UN PAUVRE DÉCALAGE ABSOLUMENT NORMAL ET LOGIQUE ÉTANT DONNÉ LA SÉMANTIQUE HTML, QUE SON ÂME AILLE EN ENFER-->
+        </fieldset>
+
+        <div class="col-md-12">
+            <div class="col-md-12">
+                <div class="form-group" ng-class="{'has-error': datas.Pointage.errDesc}">
+                    <label class="control-label">Travail réalisé :</label>
+                        <textarea rows="8"
+                                  class="form-control"
+                                  maxlength="1000"
+                                  ng-model="datas.Pointage.TravailRealise"
+                                  required
+                                  tabindex="20"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="habilitation !== 'Agent'" class="col-md-2">
+            <div class="form-group">
+                <label>Pointer pour :</label>
+                <select ng-if="habilitation === 'Encadrement'" class="form-control"
+                        ng-model="datas.Pointage.cp"
+                        ng-options="agent.cp as agent.nomPrenom for agent in agentsDpx"
+                        tabindex="6"></select>
+
+                <select ng-if="habilitation === 'DU'" class="form-control"
+                        ng-model="datas.Pointage.cp"
+                        ng-options="agent.cp as agent.nomPrenom for agent in lesAgents"
+                        tabindex="6"></select>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-md-offset-1">
+            <div class="form-group"
+                 ng-class="{'has-error': datas.Pointage.errDuree}">
+                <label class="control-label">Durée (en minutes) :</label>
+                <input type="number"
+                       step="3"
+                       min="3"
+                       max="465"
+                       class="form-control"
+                       ng-model="datas.Pointage.DureeMinutes"
+                       required
+                       tabindex="21"/>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="form-group" ng-class="{'has-error': datas.Pointage.errDate}">
+                <label class="control-label">Date :</label>
+
+                <div class="input-form date">
+                    <input type="text"
+                           id="datetimepicker1"
+                           class="form-control"
+                           placeholder="JJ/MM/AAAA"
+                           ng-model="datas.Pointage.DatePointage"
+                           pick-a-date="date"
+                           pick-a-date-options="{ format: 'dd/mm/yyyy' }"
+                           required
+                           tabindex="22"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="btn-group  margin-top-10">
+                <label>&nbsp;</label>
+                <button class="btn btn-blue"
+                        tabindex="23"
+                        ng-click="ficheagadir.AddPointage()">Valider
+                </button>
+                <button class="btn btn-blue"
+                        tabindex="24"
+                        ng-click="ficheagadir.AddPointageAndCloture()">Valider & Clôturer
+                </button>
+            </div>
+        </div>
+    </div>
+
+</fieldset>
+
+<fieldset class="row visible-print-block">
+    <legend>
+        <img ng-src={{datas.fiche.canal}} width="25px" height="25px" title="{{datas.fiche.nomCanal}}"/>
+        Fiche N°{{datas.fiche.numFiche}}
+        <button ng-if="datas.fiche.numero === undefined"
+                class="btn btn-danger"
+                ng-click="ficheagadir.ForcerCreation()"><b>Créer dans AGADIR</b></button>
+                <span class="label label-cloture"
+                      ng-if="datas.fiche.isCloture === true">Clôturée</span>
+                <span class="label label-warning"
+                      ng-if="datas.fiche.isTransferee === true">
+                    Transférée à la région {{datas.fiche.nomRegion}} avec le numéro {{datas.fiche.numeroAutreRegion}}
+                </span>
+                <span class="label label-danger"
+                      ng-if="datas.fiche.isUrgent === true">Urgent</span>
+        <small ng-if="datas.fiche.numAffaire">
+            , liée à l'affaire <a ng-href="#/affaire/lire/{{ficheagadir.routeParams.annee}}/{{datas.fiche.numAffaire}}">{{datas.fiche.numAffaire}}</a>
+        </small>
+    </legend>
+
+    <div class="col-md-12">
+        <div class="form-group">
+            <label>Poste :</label>
+            <angucomplete-alt
+                    id="posteAutocompleteInput"
+                    input-class="form-control"
+                    selected-object="datas.fiche.materiel"
+                    initial-value="{{datas.fiche.materiel}}"
+                    remote-url="{{DIURLAPI.URLGemini + 'materiel/'}}"
+                    remote-url-data-field="L_Resultats"
+                    search-fields="calife"
+                    title-field="calife"
+                    description-field="description"
+                    pause="400"
+                    match-class="bold"
+                    minlength="1"
+                    text-no-results="Aucun résultat"
+                    text-searching="Recherche en cours..."
+                    template-url="views/ficheAgadir/PosteAutocomplete.html"></angucomplete-alt>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="form-group">
+            <label>Demandeur :</label>
+            <angucomplete-alt
+                    id="agentAutocompleteInput"
+                    input-class="form-control"
+                    selected-object="datas.fiche.demandeur"
+                    initial-value="{{datas.fiche.demandeur}}"
+                    remote-url="{{DIURLAPI.URLapiRemote + 'agent/recherche/all/'}}"
+                    remote-url-data-field="L_Resultats"
+                    title-field="display"
+                    description-field="cp"
+                    search-fields="display, cp"
+                    pause="400"
+                    match-class="bold"
+                    minlength="3"
+                    text-no-results="Aucun résultat"
+                    text-searching="Recherche en cours..."
+                    template-url="views/ficheAgadir/DemandeurAutocomplete.html"></angucomplete-alt>
+        </div>
+    </div>
+
+    <div class="col-sm-4 col-xs-4">
+        <div class="form-group">
+            <label>Tel:</label>
+            <input type="tel"
+                   class="form-control"
+                   ng-model="datas.fiche.demandeur.originalObject.tel"/>
+        </div>
+    </div>
+
+    <div class="col-sm-4 col-xs-4">
+        <div class="form-group">
+            <label>Mobile:</label>
+            <input type="tel"
+                   class="form-control"
+                   ng-model="datas.fiche.demandeur.originalObject.mobile"/>
+        </div>
+    </div>
+
+    <div class="col-sm-4 col-xs-4">
+        <label>CP:</label>
+        <div class="form-group">
+            <input type="text"
+                   class="form-control"
+                   ng-model="datas.fiche.demandeur.originalObject.cp"
+                   readonly/>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="form-group">
+            <label>Description :</label>
+            <pre style="white-space: pre-wrap">{{datas.fiche.description}}</pre>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xs-6">
+        <div class="form-group">
+            <label>Projet :</label>
+            <angucomplete-alt
+                id="projectAutocompleteInput"
+                input-class="form-control"
+                selected-object="datas.fiche.projet"
+                initial-value="{{datas.fiche.projet.description.intitule}}"
+                title-field="intitule"
+                search-fields="intitule"
+                local-data="ficheagadir.Projects.liste"
+                pause="0"
+                match-class="bold"
+                minlength="1"></angucomplete-alt>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xs-6">
+        <div class="form-group">
+            <label>Agent Affecté :</label>
+            <select class="form-control"
+                    ng-model="datas.fiche.agent"
+                    ng-options="agent.cp as agent.nomPrenom for agent in ficheagadir.AgentsList.liste"
+                    ng-disabled="ficheagadir.routeParams.numFiche !== undefined"></select>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xs-6">
+        <div class="form-group">
+            <label>État :</label>
+            <select class="form-control"
+                    ng-model="datas.fiche.etat"
+                    ng-options="label for label in ficheagadir.EtatsList.liste"></select>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xs-6">
+        <div class="form-group">
+            <label>Urgence :</label>
+            <select class="form-control"
+                    ng-model="datas.fiche.isUrgent"
+                    ng-options="type.value as type.label for type in ficheagadir.TypesUrgence"></select>
+        </div>
+    </div>
+</fieldset>
+
+
+<article ng-include="'views/ficheAgadir/modalTransfert.html'"></article>

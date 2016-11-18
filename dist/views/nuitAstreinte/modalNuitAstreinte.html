@@ -1,0 +1,22 @@
+<section ng-controller="pointageNuitAstreinteModal"
+         class="modal fade"
+         tabindex="-1"
+         role="dialog"
+         id="modal-pointage-nuit-astreinte">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button class="close"
+                        data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h3 class="modal-title text-center">Modifier un pointage</h3>
+            </div>
+
+            <div class="modal-body" ng-include="'views/NuitAstreinte/ficheAstreinte.html'"></div>
+            <div class="modal-body" ng-include="'views/NuitAstreinte/ficheNuit.html'"></div>
+        </div>
+    </div>
+</section>
