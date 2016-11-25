@@ -1,5 +1,6 @@
 var gulp = require('gulp');
 var pump = require('pump');
+var path = require('path');
 var fctPerso = require('./fctPerso.js');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
@@ -7,7 +8,6 @@ var cleanCSS = require('gulp-clean-css');
 
 // Variables de chemins
 var source = './src'; // dossier de travail
-fctPerso.setSrcFolderName(source);
 var destination = './dist'; // dossier à livrer
 
 gulp.task('default', function() {
@@ -19,73 +19,99 @@ gulp.task('concatification', function(){
     fctPerso.deleteFuckingFolder(destination);
     console.log("Concaténation et minification des fichiers JS et CSS");
 
-    fctPerso.createIndexHTMLFile(source + "/index.html", destination);
+    fctPerso.createIndexHTMLFile();
     console.log("création du fichier index.html terminée.");
     //MISE EN 'PROD'
     fctPerso.duplicateFolder(source, destination);
     console.log("copie des fichiers terminée");
 
-    var TagsList = fctPerso.innerConcatification(source + "/index.html");
-
-    //console.log("TagsList", TagsList);
+    var TagsList = fctPerso.innerConcatification();
 
     var scriptsPathList = fctPerso.getScriptsPath(TagsList).map(function (v) {
-        return v.replace("./", source + "/")
+        return path.resolve(source, v);
     });
     var stylesPathList = fctPerso.getStylesPath(TagsList).map(function (v) {
-        return v.replace("./", source + "/")
+        return path.resolve(source, v);
     });
-
-    //console.log(scriptsPathList, stylesPathList);
 
     console.log("JS:", scriptsPathList.length, " fichier(s)");
     console.log("CSS:", stylesPathList.length, " fichier(s)");
 
-    var JSfileName = new Date().getTime().toString() + '-dist.js';
-    pump([
-            gulp.src(scriptsPathList),
-            concat(JSfileName),
-            uglify({
-                preserveComments: false
-            }),
-            gulp.dest(destination + "/JS")
-        ],
-        function (err) {
-            if (err != null){
-                console.error(err);
-            }
-            else{
-                console.log("concatification JS terminée.");
-                fctPerso.insertScript(destination + "/index.html", "/JS/" + JSfileName);
-                console.log("ajout du script à la page terminé.");
-            }
-        }
-    );
+    if (scriptsPathList.length > 0){
+        var JSfileName = new Date().getTime().toString() + '-dist.js';
+        pump([
+                gulp.src(scriptsPathList),
+                concat(JSfileName),
+                uglify({
+                    preserveComments: false
+                }),
+                gulp.dest(destination + "/JS")
+            ],
+            function (err) {
+                if (err != null){
+                    console.error(err);
+                }
+                else{
+                    console.log("concatification JS terminée.");
+                    fctPerso.insertScript("/JS/" + JSfileName);
+                    console.log("ajout du script à la page terminé.");
 
-    var CSSfileName = new Date().getTime().toString() + '-dist.css';
-    pump([
-            gulp.src(stylesPathList),
-            concat(CSSfileName),
-            cleanCSS({
-                keepSpecialComments: 0
-            }),
-            gulp.dest(destination + "/CSS")
-        ],
-        function (err) {
-            if (err != null){
-                console.error(err);
+                    //TRAITEMENT DES SCRIPTS À METTRE EN DERNIER
+                    console.log("traitement des scripts à appeler en dernier.");
+                    fctPerso.innerLaSToC().forEach(function (val, ind, arr) {
+                        fctPerso.gestExtScript(val);
+                    });
+                }
             }
-            else{
-                console.log("concatification CSS terminée.");
-                fctPerso.insertStyle(destination + "/index.html", "/CSS/" + CSSfileName);
-                console.log("ajout du style à la page terminé.");
+        );
+    }
+
+    if (stylesPathList.length > 0){
+        var CSSfileName = new Date().getTime().toString() + '-dist.css';
+        pump([
+                gulp.src(stylesPathList),
+                concat(CSSfileName),
+                cleanCSS({
+                    keepSpecialComments: 0
+                }),
+                gulp.dest(destination + "/CSS")
+            ],
+            function (err) {
+                if (err != null){
+                    console.error(err);
+                }
+                else{
+                    console.log("concatification CSS terminée.");
+                    fctPerso.insertStyle("/CSS/" + CSSfileName);
+                    console.log("ajout du style à la page terminé.");
+                }
             }
-        }
-    );
+        );
+    }
+
 });
 
-gulp.task('testFct', function () {
-    //path = require("path");
-    //console.log(path.parse(path.normalize(source)).name);
-    //console.log(path.parse(path.normalize(source + "/images")));
+gulp.task('test', function () {
+/*
+    console.log(fctPerso.isMovable("../node_modules/angular/angular.js"));
+    console.log(fctPerso.isMovable("scripts/controllers/DragNDrop/controllers.js"));
+    console.log(fctPerso.isMovable("http://comet.ariane.st.sncf.fr/Scripts/jquery.signalR-2.2.0.min.js"));
+*/
+    fctPerso.createIndexHTMLFile();
+/*
+    var qqch = fctPerso.innerLaSToC();
+
+    console.log(qqch);
+
+    qqch.forEach(function (val, ind, arr) {
+        console.log("envoie de", val);
+
+        fctPerso.gestExtScript(val);
+
+    });
+*/
+});
+
+gulp.task('init', function () {
+    fctPerso.generateIndexHTMLFile();
 });

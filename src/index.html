@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="styles/jquery-ui.structure.css" />
 
     <script src="scripts/Libs/jquery.js"></script>
-    <script src="scripts/Libs/angular.js"></script>
+    <script src="../node_modules/angular/angular.js"></script>
     <script src="scripts/Libs/leaflet.js"></script>
     <script src="scripts/Libs/angular-leaflet-directive.min.js"></script>
     <script src="scripts/Libs/leaflet.label.js"></script>
@@ -100,9 +100,6 @@
         <div ng-include="'views/affaire/modalAffaires.html'"></div>
     </section>
 
-    <script src="http://comet.ariane.st.sncf.fr/Scripts/jquery.signalR-2.2.0.min.js"></script>
-    <script src="http://comet.ariane.st.sncf.fr/signalr/hubs" type="text/javascript"></script>
-
     <!--test-->
 
 <!--
@@ -168,6 +165,22 @@ PROD
     <script src="scripts/MongoDB/factories.js"></script>
     <script src="scripts/Libs/fr_FR.js"></script>
     <!--/CONCATIFICATION-->
+    <!--LASTOC-->
+    <script src="http://comet.ariane.st.sncf.fr/Scripts/jquery.signalR-2.2.0.min.js"></script>
+    <script src="http://comet.ariane.st.sncf.fr/signalr/hubs" type="text/javascript"></script>
+    <script>
+        /**
+         * retourne le nombre de paramètres passées
+         * @params {Args} [] - n'importe quoi
+         * @returns {Number}
+         */
+        function global_test() {
+            //COMMENTAIRES
+            return arguments.length;//blabla explicatif
+        }
+    </script>
+    <!--/LASTOC-->
+
 
 </body>
 
