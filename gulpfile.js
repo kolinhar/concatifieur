@@ -91,27 +91,6 @@ gulp.task('concatification', function(){
 
 });
 
-gulp.task('test', function () {
-/*
-    console.log(fctPerso.isMovable("../node_modules/angular/angular.js"));
-    console.log(fctPerso.isMovable("scripts/controllers/DragNDrop/controllers.js"));
-    console.log(fctPerso.isMovable("http://comet.ariane.st.sncf.fr/Scripts/jquery.signalR-2.2.0.min.js"));
-*/
-    fctPerso.createIndexHTMLFile();
-/*
-    var qqch = fctPerso.innerLaSToC();
-
-    console.log(qqch);
-
-    qqch.forEach(function (val, ind, arr) {
-        console.log("envoie de", val);
-
-        fctPerso.gestExtScript(val);
-
-    });
-*/
-});
-
 gulp.task('init', function () {
     fctPerso.generateIndexHTMLFile();
 });
