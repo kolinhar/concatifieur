@@ -16,8 +16,9 @@ const REGEXPINNERLASTOCTAG = /<!--LASTOC-->(\r|\n|.)*<!--\/LASTOC-->/gmi;
 const REGEXPINNERCOMMENTTAG = /<!--\s*.*\s*-->/gm;
 const REGEXPSTRINGINSTRING = /["|'].*?["|']/;
 const REGEXPCOMMENTMULTIPLELINE = /\/\*.*\*\//g;
-var INDEXFILENAME = "index.html";
-var SRCFOLDERNAME = path.parse(SOURCE).base;
+const PATHSEPARATOR = path.sep;
+const INDEXFILENAME = "index.html";
+let SRCFOLDERNAME = path.parse(SOURCE).base;
 
 /**
  * (SYNC) SUPPRIME UN RÉPERTOIRE MÊME SI IL Y A DES FICHIERS/DOSSIERS À L'INTÉRIEUR DE MANIÈRE RÉCURSIVE
@@ -90,22 +91,22 @@ function generateIndexHTMLFile() {
         if (!fs.existsSync(path.resolve(SOURCE)))
             fs.mkdirSync(path.resolve(SOURCE));
 
-        fs.writeFileSync(path.resolve(SOURCE, "index.html"), "<!DOCTYPE html>\n" +
-            "<html lang='fr'>\n" +
-            "\t<head>\n" +
-            "\t\t<meta charset='UTF-8'>\n" +
-            "\t\t<meta name='viewport' content='width=device-width, initial-scale=1'>\n" +
-            "\t\t<title>index.html</title>\n" +
-            "\t\t<!--CONCATIFICATION-->\n" +
-            "\t\t<!--/CONCATIFICATION-->\n" +
-            "\t</head>\n" +
-            "\t<body>\n" +
-            "\t\t<!--CONCATIFICATION-->\n" +
-            "\t\t<!--/CONCATIFICATION-->\n" +
-            "\t\t<!--LASTOC-->\n" +
-            "\t\t<!--/LASTOC-->\n" +
-            "\t</body>\n" +
-            "</html>", "utf8");
+        fs.writeFileSync(path.resolve(SOURCE, "index.html"), `<!DOCTYPE html> 
+<html lang='fr'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+        <title>index.html</title>
+        <!--CONCATIFICATION-->
+        <!--/CONCATIFICATION-->
+        </head>
+    <body>
+        <!--CONCATIFICATION-->
+        <!--/CONCATIFICATION-->
+        <!--LASTOC-->
+        <!--/LASTOC-->
+    </body>
+</html>`, "utf8");
 
         console.log("fichier 'index.html' créé dans le dossier " + SOURCE);
     }
@@ -193,8 +194,8 @@ function duplicateFolder(origPath, destPath) {
     //console.log(path.relative(destPath, origPath));
 
     path.relative(destPath, origPath)
-        .replace("..\\src", "")
-        .split("\\")
+        .replace(`..${PATHSEPARATOR}src`, "")
+        .split(PATHSEPARATOR)
         .filter(function (val) {
             return val !== "";
         })
@@ -209,17 +210,17 @@ function duplicateFolder(origPath, destPath) {
     if (isDuplicableFolder(origPath)){
         fs.readdirSync(origPath)
             .forEach(function (val) {
-                var newPathOrig = origPath + "\\" + val;
+                var newPathOrig = origPath + PATHSEPARATOR + val;
 
                 if (fs.statSync(newPathOrig).isFile()){
                     try {
                         if (val !== INDEXFILENAME && val !== IGNORENAME){
                             //COPIE DES FICHIERS
-                            fs.linkSync(newPathOrig, destPath + "\\" + val);
+                            fs.linkSync(newPathOrig, destPath + PATHSEPARATOR + val);
                         }
                     } catch (e) {
                         if (e.code === "EEXIST")
-                            console.warn("le fichier " + destPath + "\\" + val + " existe déjà.");
+                            console.warn("le fichier " + destPath + PATHSEPARATOR + val + " existe déjà.");
                         else
                             console.warn("Erreur", e);
                     }

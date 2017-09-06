@@ -1,14 +1,14 @@
-var gulp = require('gulp');
-var pump = require('pump');
-var path = require('path');
-var fctPerso = require('./fctPerso.js');
-var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
-var cleanCSS = require('gulp-clean-css');
+const gulp = require('gulp');
+const pump = require('pump');
+const path = require('path');
+const fctPerso = require('./fctPerso.js');
+const concat = require('gulp-concat');
+const uglify = require('gulp-uglify');
+const cleanCSS = require('gulp-clean-css');
 
 // Variables de chemins
-var source = './src'; // dossier de travail
-var destination = './dist'; // dossier à livrer
+const source = './src'; // dossier de travail
+const destination = './dist'; // dossier à livrer
 
 gulp.task('default', function() {
     // place code for your default task here
@@ -25,12 +25,12 @@ gulp.task('concatification', function(){
     fctPerso.duplicateFolder(source, destination);
     console.log("copie des fichiers terminée");
 
-    var TagsList = fctPerso.innerConcatification();
+    const TagsList = fctPerso.innerConcatification();
 
-    var scriptsPathList = fctPerso.getScriptsPath(TagsList).map(function (v) {
+    const scriptsPathList = fctPerso.getScriptsPath(TagsList).map(function (v) {
         return path.resolve(source, v);
     });
-    var stylesPathList = fctPerso.getStylesPath(TagsList).map(function (v) {
+    const stylesPathList = fctPerso.getStylesPath(TagsList).map(function (v) {
         return path.resolve(source, v);
     });
 
@@ -38,7 +38,7 @@ gulp.task('concatification', function(){
     console.log("CSS:", stylesPathList.length, " fichier(s)");
 
     if (scriptsPathList.length > 0){
-        var JSfileName = new Date().getTime().toString() + '-dist.js';
+        const JSfileName = new Date().getTime().toString() + '-dist.js';
         pump([
                 gulp.src(scriptsPathList),
                 concat(JSfileName),
@@ -67,7 +67,7 @@ gulp.task('concatification', function(){
     }
 
     if (stylesPathList.length > 0){
-        var CSSfileName = new Date().getTime().toString() + '-dist.css';
+        const CSSfileName = new Date().getTime().toString() + '-dist.css';
         pump([
                 gulp.src(stylesPathList),
                 concat(CSSfileName),
