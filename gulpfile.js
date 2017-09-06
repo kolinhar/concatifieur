@@ -3,7 +3,7 @@ const pump = require('pump');
 const path = require('path');
 const fctPerso = require('./fctPerso.js');
 const concat = require('gulp-concat');
-const uglify = require('gulp-uglify');
+const uglify = require('gulp-uglify-es').default;
 const cleanCSS = require('gulp-clean-css');
 
 // Variables de chemins
@@ -42,9 +42,7 @@ gulp.task('concatification', function(){
         pump([
                 gulp.src(scriptsPathList),
                 concat(JSfileName),
-                uglify({
-                    preserveComments: false
-                }),
+                uglify(),
                 gulp.dest(destination + "/JS")
             ],
             function (err) {

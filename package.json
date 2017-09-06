@@ -18,5 +18,8 @@
     "gulp-uglify": "^2.0.0",
     "node-minify": "^2.0.0",
     "pump": "^1.0.1"
+  },
+  "dependencies": {
+    "gulp-uglify-es": "^0.1.3"
   }
 }
