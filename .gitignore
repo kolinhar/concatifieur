@@ -1,4 +1,4 @@
 .idea/
-src/*
+src/
 dist/
 node_modules/
