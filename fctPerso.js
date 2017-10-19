@@ -10,9 +10,11 @@ const DESTINATION = path.resolve('./dist');
 
 const IGNORENAME = ".ignore";
 const REGEXPSPACEBETWEENTAGS = />\s+</gm;
-const REGEXPNEWLINE = /\r*\n*/gm;
-const REGEXPINNERCONCATTAG = /<!--CONCATIFICATION-->(<.*?>)*<!--\/CONCATIFICATION-->/gmi;
-const REGEXPINNERLASTOCTAG = /<!--LASTOC-->(\r|\n|.)*<!--\/LASTOC-->/gmi;
+const REGEXPNEWLINE = /[\r\n]*/gm;
+const REGEXSCRIPTTAG = /<script(.|\r|\n)*?>(.|\r|\n)*?<\/script>/gi;
+const REGEXSCRIPTINLINE = /<script(.|\r|\n)*?>(.|\r|\n)+<\/script>/gi;
+const REGEXSTYLETAG = /(<link(.|\r|\n)*?rel=['"]stylesheet['"](.|\r|\n)*?(\/)*>)|(<style(.|\r|\n)*?>(.|\r|\n)*?<\/style>)/gi;
+const REGEXSTYLEINLINE = /<style(.|\r|\n)*?>(.|\r|\n)+<\/style>/gi;
 const REGEXPINNERCOMMENTTAG = /<!--\s*.*\s*-->/gm;
 const REGEXPSTRINGINSTRING = /["|'].*?["|']/;
 const REGEXPCOMMENTMULTIPLELINE = /\/\*.*\*\//g;
@@ -29,7 +31,7 @@ function deleteFuckingFolder (folder) {
 
     if( fs.existsSync(folder) ) {
         fs.readdirSync(folder).forEach(function(file){
-            var curPath = path.resolve(folder, file);
+            const curPath = path.resolve(folder, file);
 
             if(fs.lstatSync(curPath).isDirectory()) { // recurse
                 deleteFuckingFolder(curPath);
@@ -59,7 +61,7 @@ function createIndexHTMLFile (indexOrig, pathDest){
     if (!fs.existsSync(indexOrig))
         throw "fichier '" + indexOrig + "' introuvable";
 
-    var indexOrigFile = fs.readFileSync(indexOrig, "utf8");
+    let indexOrigFile = fs.readFileSync(indexOrig, "utf8");
 
     //SUPPRESSION DES ESPACES INUTILES ENTRE LES BALISES
     indexOrigFile = indexOrigFile.replace(REGEXPSPACEBETWEENTAGS, "><");
@@ -96,7 +98,7 @@ function generateIndexHTMLFile() {
     <head>
         <meta charset='UTF-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
-        <title>index.html</title>
+        <title>TITRE</title>
         <!--CONCATIFICATION-->
         <!--/CONCATIFICATION-->
         </head>
@@ -120,8 +122,8 @@ function generateIndexHTMLFile() {
 function insertStyle (stylePath, filePath) {
     filePath = filePath || path.resolve(DESTINATION, "index.html");
 
-    var html = fs.readFileSync(filePath, "utf8");
-    var posHead = html.indexOf("</head>");
+    let html = fs.readFileSync(filePath, "utf8");
+    const posHead = html.indexOf("</head>");
 
     if (posHead !== -1){
         html = html.replace("</head>",
@@ -143,10 +145,10 @@ function insertStyle (stylePath, filePath) {
 function insertScript(scriptPath, filePath){
     filePath = filePath || path.resolve(DESTINATION, "index.html");
 
-    var html = fs.readFileSync(filePath, "utf8");
-    var posHead = html.indexOf("</body>");
+    let html = fs.readFileSync(filePath, "utf8");
+    const posBody = html.indexOf("</body>");
 
-    if (posHead !== -1){
+    if (posBody !== -1){
         html = html.replace("</body>",
             "<script src='" + normalizePath(scriptPath) + "'></script>" +
             "</body>");
@@ -166,9 +168,9 @@ function insertScript(scriptPath, filePath){
 function insertLaSToC(scriptTag, fileIndexPath){
     fileIndexPath = fileIndexPath || path.resolve(DESTINATION, "index.html");
 
-    var html = fs.readFileSync(fileIndexPath, "utf8");
+    let html = fs.readFileSync(fileIndexPath, "utf8");
 
-    var posHead = html.indexOf("</body>");
+    const posHead = html.indexOf("</body>");
     if (posHead !== -1){
         html = html.replace("</body>", scriptTag + "</body>");
 
@@ -187,7 +189,7 @@ function insertLaSToC(scriptTag, fileIndexPath){
 function duplicateFolder(origPath, destPath) {
     origPath = path.resolve(origPath);
     destPath = path.resolve(destPath);
-    var destPathOrig = path.resolve(destPath);
+    const destPathOrig = path.resolve(destPath);
 
     //console.log(origPath, destPath);
 
@@ -210,7 +212,7 @@ function duplicateFolder(origPath, destPath) {
     if (isDuplicableFolder(origPath)){
         fs.readdirSync(origPath)
             .forEach(function (val) {
-                var newPathOrig = origPath + PATHSEPARATOR + val;
+                const newPathOrig = origPath + PATHSEPARATOR + val;
 
                 if (fs.statSync(newPathOrig).isFile()){
                     try {
@@ -242,30 +244,59 @@ function isDuplicableFolder(folderPath){
 }
 
 /**
- * (SYNC) RECHERCHE TOUTES LES BALISES CONCATIFICATION ET RETOURNE UNE LISTE DE LEURS CONTENUS
+ * (SYNC) RECHERCHE TOUTES LES BALISES PASSÉES EN PARAMÈTRE ET RETOURNE UNE LISTE DE LEURS CONTENUS
+ * @param {RegExp} regex - la regexp permettant de mettre à jour le contenu de la balise recherchée
  * @param {string} [filePath] - le chemin du fichier
- * @returns {Array} tableau de chemins
+ * @returns {Object} Objet contenant 2 tableaux pour les scripts et pour les styles
  */
-function innerConcatification(filePath){
+function innerTag(regex, filePath){
     filePath = path.resolve(filePath || path.resolve(SOURCE, "index.html"));
-    var ret = [];
-    var html = fs.readFileSync(filePath, "utf8")
-        .replace(REGEXPSPACEBETWEENTAGS, "><")
-        .replace(REGEXPNEWLINE, "");
+    let ret = {};
+    const html = fs.readFileSync(filePath, "utf8");
 
-    var concatArr = html.match(REGEXPINNERCONCATTAG);
+    //PARSER L'INTÉRIEUR DES BALISES CONCATIFICATION
+    const concatArr = html.match(regex);
 
+    //LISTER LES SCRIPTS ET LES STYLES
     if (concatArr !== null){
+        const l_scriptTab = [],
+            l_styleTab = [];
+
         concatArr.forEach(function (val, ind, arr) {
-            val.split(/(<.*?>)/)
-                .filter(function (v) {
-                    //SUPPRESSION DES CHAINES VIDES, DES BALISES DE COMMENTAIRES ET DES BALISES FERMANTES
-                    return v !== "" && v.match(/<!--|<\//gim) === null;
-                })
-                .forEach(function (val, ind, arr) {
-                    ret.push(val);
+            const l_scripts = val.match(REGEXSCRIPTTAG),
+                l_styles = val.match(REGEXSTYLETAG);
+
+            if (l_scripts !== null){
+                l_scripts.forEach(function (v) {
+                    let l_path = extractScriptPath(v) || null,
+                        l_content = v.match(REGEXSCRIPTINLINE);
+
+                    l_scriptTab.push({
+                        chemin: l_path,
+                        content: l_content && l_content[0].replace(/^<script(.|\r|\n)*?>/gi, "").replace(/<\/script>$/gi, ""),
+                        isMovable: isMovable(l_path),
+                        props: getOtherProps(v)
+                    });
                 });
+            }
+
+            if (l_styles !== null){
+                l_styles.forEach(function (v) {
+                    let l_path = extractStylePath(v) || null,
+                        l_content = v.match(REGEXSTYLEINLINE);
+
+                    l_styleTab.push({
+                        chemin: l_path,
+                        content: l_content && l_content[0].replace(/^<style(.|\r|\n)*?>/gi, "").replace(/<\/style>$/gi, ""),
+                        isMovable: isMovable(l_path),
+                        props: getOtherProps(v)
+                    });
+                });
+            }
         });
+
+        ret.scriptsTab = l_scriptTab;
+        ret.stylesTab = l_styleTab;
     }
 
     return ret;
@@ -274,31 +305,57 @@ function innerConcatification(filePath){
 /**
  * (SYNC) RECHERCHE TOUTES LES BALISES LASTOC ET RETOURNE UNE LISTE DE LEURS CONTENUS
  * @param {string} [filePath] - le chemin du fichier
- * @returns {Array} tableau de chemins
+ * @returns {Object} Objet contenant 2 tableaux pour les scripts et pour les styles
  */
 function innerLaSToC(filePath) {
     filePath = path.resolve(filePath || path.resolve(SOURCE, "index.html"));
 
-    var ret = [];
-    var html = fs.readFileSync(filePath, "utf8");
+    const ret = {};
+    const html = fs.readFileSync(filePath, "utf8");
 
     //RECHERCHE DE TOUTES LES BALISES LASTOC
-    var concatArr = html.match(REGEXPINNERLASTOCTAG);
+    const concatArr = html.match(REGEXPINNERLASTOCTAG);
 
+    //LISTER LES SCRIPTS ET LES STYLES
     if (concatArr !== null){
+        const l_scriptTab = [],
+            l_styleTab = [];
+
         concatArr.forEach(function (val, ind, arr) {
-            val.replace(/<!--LASTOC-->|<!--\/LASTOC-->/gi, "")
-                .split(/<\/script>/gi)
-                .filter(function (v) {
-                    //SUPPRESSION DES CHAINES VIDES, DES BALISES DE COMMENTAIRES
-                    return v.trim() !== "" && v.trim().match(/<!--/gim) === null;
-                })
-                .forEach(function (val, ind, arr) {
-                    ret.push(val
-                        .replace(/<script>/gi, "")//SUPPRESSION DES BALISES DE DÉBUT DE SCRIPTS INLINE
-                        .trim());
+            const l_scripts = val.match(REGEXSCRIPTTAG),
+                l_styles = val.match(REGEXSTYLETAG);
+
+            if (l_scripts !== null){
+                l_scripts.forEach(function (v) {
+                    let l_path = extractScriptPath(v) || null,
+                        l_content = v.match(REGEXSCRIPTINLINE);
+
+                    l_scriptTab.push({
+                        chemin: l_path,
+                        content: l_content && l_content[0].replace(/^<script(.|\r|\n)*?>/gi, "").replace(/<\/script>$/gi, ""),
+                        isMovable: isMovable(l_path),
+                        props: getOtherProps(v)
+                    });
                 });
+            }
+
+            if (l_styles !== null){
+                l_styles.forEach(function (v) {
+                    let l_path = extractStylePath(v) || null,
+                        l_content = v.match(REGEXSTYLEINLINE);
+
+                    l_styleTab.push({
+                        chemin: l_path,
+                        content: l_content && l_content[0].replace(/^<style(.|\r|\n)*?>/gi, "").replace(/<\/style>$/gi, ""),
+                        isMovable: isMovable(l_path),
+                        props: getOtherProps(v)
+                    });
+                });
+            }
         });
+
+        ret.scriptsTab = l_scriptTab;
+        ret.stylesTab = l_styleTab;
     }
 
     return ret;
@@ -308,11 +365,11 @@ function innerLaSToC(filePath) {
  * (SYNC) GÈRE LES BALISES DE SCRIPT À APPELER EN DERNIER
  * @param {string} scripTag - balise script
  */
-function gestExtScript(scripTag){
+function getExtScript(scripTag){
     if (scripTag.indexOf("<link") === 0)
         return;
 
-    var html = fs.readFileSync(path.resolve(DESTINATION, "index.html"), "utf8");
+    let html = fs.readFileSync(path.resolve(DESTINATION, "index.html"), "utf8");
 
     if (isMovable(extractScriptPath(scripTag))){
         //COPIE DU FICHIER DANS LE RÉPEROIRE DE DISTRIBUTION
@@ -350,7 +407,7 @@ function gestExtScript(scripTag){
  * @returns {boolean}
  */
 function isMovable(src) {
-    return src.match(/^http|https|ftp|ftps/) === null && src.trim() !== "";
+    return !!src && src.trim() !== "" && src.match(/^http|https|ftp|ftps/i) === null;
 }
 
 /**
@@ -359,12 +416,12 @@ function isMovable(src) {
  * @returns {string}
  */
 function extractScriptPath(strTag){
-    var src = strTag.match(/src=["|'].*["|']/);
+    const src = strTag.match(/src=["'].*["']/i);
 
-    if (strTag.indexOf("<script") === 0 && src !== null) {
+    if (!!src && strTag.indexOf("<script") === 0) {
         return src[0]
             .match(REGEXPSTRINGINSTRING)[0]
-            .replace(/["|']/g, "");
+            .replace(/["']/g, "");
     }
     return "";
 }
@@ -375,12 +432,12 @@ function extractScriptPath(strTag){
  * @returns {string}
  */
 function extractStylePath (strTag) {
-    var href = strTag.match(/href=["|'].*["|']/);
+    const href = strTag.match(/href=["'].*["']/i);
 
-    if (strTag.indexOf("<link") === 0 && strTag.match(/rel=["|']stylesheet["|']/i) !== null && href !== null) {
+    if (!!href && strTag.indexOf("<link") === 0 && strTag.match(/rel=["']stylesheet["']/i) !== null) {
         return href[0]
             .match(REGEXPSTRINGINSTRING)[0]
-            .replace(/["|']/g, "");
+            .replace(/["']/g, "");
     }
     return "";
 }
@@ -423,14 +480,14 @@ function getStylesPath(tagList) {
  * @returns {string}
  */
 function deleteCommentTag(thisStr, tagName) {
-    var lastIndex = 0,
-        tabStr = [];
+    let lastIndex = 0;
+    const tabStr = [];
 
     thisStr.match(new RegExp("<!--" + tagName + "-->", "gmi"))
         .forEach(function (val) {
-            var posDeb = thisStr.indexOf("<!--" + tagName + "-->", lastIndex);
-            var posFin = thisStr.indexOf("<!--/" + tagName + "-->", lastIndex);
-            var strToDel = thisStr.slice(posDeb, posFin + ("<!--/" + tagName + "-->").length);
+            const posDeb = thisStr.indexOf("<!--" + tagName + "-->", lastIndex);
+            const posFin = thisStr.indexOf("<!--/" + tagName + "-->", lastIndex);
+            const strToDel = thisStr.slice(posDeb, posFin + ("<!--/" + tagName + "-->").length);
             //ON ENREGISTRE LA CHAINE À SUPPRIMER
             tabStr.push(strToDel);
 
@@ -445,97 +502,50 @@ function deleteCommentTag(thisStr, tagName) {
     return thisStr;
 }
 
-//@DEPRECATED METHODS
 /**
- * @deprecated INTIALISE LE NOM DU DOSSIER DES SOURCES
- * @param {string} srcPath
+ * RETOURNE LA LISTE LES PROPRIÉTÉS AUTRES QUE SRC, HREF ET REL DE LA BALISE PASSÉE EN PARAMÈTRE
+ * @param {string} tag
+ * @returns {Object} liste les propriétés autres que src, href et rel
  */
-function setSrcFolderName(srcPath){
-    SRCFOLDERNAME = path.parse(path.normalize(srcPath.trim())).name;
-}
+function getOtherProps(tag) {
+    //REMPLACEMENT DE TOUS LES SAUTS DE LIGNE POUR MIEUX TRAITER LA CHAINE DE CARACTÈRES AVEC LES REGEXP
+    tag = tag.replace(/\n/g, " ");
 
-/**
- * @deprecated (SYNC) RECHERCHE LES FICHIERS QUI COMPORTENT UNE EXTENSION DONNÉE DANS UN DOSSIER ET TOUS SES SOUS-DOSSIERS
- * @param {string} chemin - réperetoire dans lequel on cherche les fichiers
- * @param {string} extension - extension des fichiers recherchés commençant par un point ex: '.js'
- * @param {function} callback - fonction appelée lorsque le traitement est terminé dont le paramètre est la liste des fichiers trouvés
- * @param {string[]} [pathArray] - tableau de chaines de caractères contenant la liste des fichiers
- */
-function searchFilesByExtension (chemin, extension, callback, pathArray) {
-    var _DEBUG = false;
-    extension = extension.toLowerCase();
+    const regexProps = /\w+-*\w+=["'].+['"]/g;
+    const result = tag.match(regexProps);
+    let ret = {};
 
-    if (pathArray === undefined)
-        pathArray = [];
 
-    //SUPPRESSION DES '/' EN DÉBUT ET FIN DE CHAINE
-    chemin = trimFolderPath(chemin);
+    if (result !== null){
+        result.forEach(function (v) {
+        v.split(/["']\s+/g).forEach(function (val) {
+                const l_prop = val.split("=");
 
-    //console.log(contenu);
-
-    //ON NE CONSIDÈRE PAS LES RÉPERTOIRES (ET LEURS SOUS-DOSSIERS) CONTENANT UN FICHIER '.IGNORE'
-    try{
-        var truc = fs.accessSync(chemin + "/.ignore");
-        _DEBUG && console.log(".ignore trouvé dans", chemin);
-        _DEBUG && console.log("fichier(s) ignoré(s)", fs.readdirSync(chemin).filter(function (val) {
-            return val !== ".ignore";
-        }).join(", "));
-        return;
-    }
-    catch(e){
-        //TOUT VA BIEN
+                if (["rel", "src", "href"].indexOf(l_prop[0].trim()) === -1){
+                    ret[l_prop[0].trim()] = l_prop[1].replace(/^["']/, "").replace(/["']$/, "").trim();
+                }
+            })
+        })
     }
 
-    //D'ABORD LES FICHIERS DU RÉPERTOIRE EN COURS
-    contenu.forEach(function (val, ind, arr) {
-        var cheminFichierCourant = chemin + "/" + val;
-
-        if (fs.statSync(cheminFichierCourant).isDirectory() === false && cheminFichierCourant.slice(cheminFichierCourant.length-extension.length, cheminFichierCourant.length).toLowerCase() === extension)
-            pathArray.push(cheminFichierCourant);
-    });
-
-    //PUIS LES RÉPERTOIRES
-    contenu.forEach(function (val, ind, arr) {
-        var cheminDossierCourant = chemin + "/" + val;
-
-        if (fs.statSync(cheminDossierCourant).isDirectory() === true) {
-            /**
-             * ON NE PASSE PAS LE CALLBACK SINON CE SERA L'ENFER ;-)
-             * MAIS ON PASSE LE DERNIER PARAMÈTRE QUI SERA PASSÉ EN RÉFÉRENCE
-             */
-            searchFilesByExtension(cheminDossierCourant, extension, null, pathArray);
-        }
-
-        if (ind === arr.length-1)
-            callback && callback(pathArray);
-    });
-}
-
-/**
- * @deprecated SUPPRIME LES '/' EN DÉBUT ET FIN DE CHAINE
- * @param {string} path
- * @returns {string}
- */
-function trimFolderPath(path){
-    //SUPPRESSION DES '/' EN DÉBUT ET FIN DE CHAINE
-    if (path.slice(0, 1) === "/")
-        path = path.slice(1);
-
-    if (path.slice(path.length - 1, path.length) === "/")
-        path = path.slice(0, path.length - 1);
-
-    return path;
+    return ret;
 }
 
 module.exports.deleteFuckingFolder = deleteFuckingFolder;
 module.exports.createIndexHTMLFile = createIndexHTMLFile;
 module.exports.insertStyle = insertStyle;
 module.exports.insertScript = insertScript;
-module.exports.innerConcatification = innerConcatification;
+module.exports.innerTag = innerTag;
 module.exports.getScriptsPath = getScriptsPath;
 module.exports.getStylesPath = getStylesPath;
 module.exports.duplicateFolder = duplicateFolder;
 module.exports.generateIndexHTMLFile = generateIndexHTMLFile;
 module.exports.insertLaSToC = insertLaSToC;
 module.exports.innerLaSToC = innerLaSToC;
-module.exports.gestExtScript = gestExtScript;
+module.exports.getExtScript = getExtScript;
+
+//POUR LES TESTS
+module.exports.isMovable = isMovable;
+module.exports.extractScriptPath = extractScriptPath;
+module.exports.extractStylePath = extractStylePath;
+module.exports.getOtherProps = getOtherProps;

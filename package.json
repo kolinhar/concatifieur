@@ -1,16 +1,16 @@
 {
-  "name": "projetx",
-  "version": "0.0.0",
-  "description": "none",
-  "main": "index.html",
+  "name": "concatifieur",
+  "version": "0.0.1",
+  "description": "concaténation et minification de fichers JS et CSS",
+  "main": "app.js",
   "scripts": {
-    "test": "test"
+    "start": "gulp min",
+    "test": "mocha -c testing.js",
+    "dev": "gulp concatification"
   },
-  "author": "ASTI STRASBOURG",
+  "author": "RemyJuanes",
   "license": "WTFPL",
-  "devDependencies": {
-    "angular": "^1.5.8",
-    "bootstrap": "^3.3.7",
+  "dependencies": {
     "clean-css": "^3.4.20",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.13",
@@ -19,5 +19,9 @@
     "node-minify": "^2.0.0",
     "pump": "^1.0.1"
   },
-  "dependencies": {}
+  "devDependencies": {
+    "angular": "^1.5.8",
+    "bootstrap": "^3.3.7",
+    "mocha": "^4.0.1"
+  }
 }

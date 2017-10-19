@@ -6,6 +6,10 @@ const concat = require('gulp-concat');
 const uglify = require('gulp-uglify-es').default;
 const cleanCSS = require('gulp-clean-css');
 
+const REGEXPINNERCONCATTAG = /<!--CONCATIFICATION-->(.|\r|\n)*?<!--\/CONCATIFICATION-->/g;
+const REGEXPINNERLASTOCTAG = /<!--LASTOC-->(\r|\n|.)*?<!--\/LASTOC-->/g;
+
+
 // Variables de chemins
 const source = './src'; // dossier de travail
 const destination = './dist'; // dossier à livrer
@@ -15,7 +19,25 @@ gulp.task('default', function() {
     console.log("Hello World!");
 });
 
-gulp.task('concatification', function(){
+gulp.task('min', function(){
+    fctPerso.deleteFuckingFolder(destination);
+    // console.log("Concaténation et minification des fichiers JS et CSS");
+
+    fctPerso.createIndexHTMLFile();
+    // console.log("création du fichier index.html terminée.");
+    //MISE EN 'PROD'
+    fctPerso.duplicateFolder(source, destination);
+    // console.log("copie des fichiers terminée");
+
+    // console.log("liste des balises");
+    const TagsList = fctPerso.innerTag(REGEXPINNERCONCATTAG);
+    console.log(TagsList);
+
+    const LastTagslist = fctPerso.innerTag(REGEXPINNERLASTOCTAG);
+    console.log(LastTagslist);
+});
+
+gulp.task("concatification", function (arg) {
     fctPerso.deleteFuckingFolder(destination);
     console.log("Concaténation et minification des fichiers JS et CSS");
 
@@ -28,8 +50,11 @@ gulp.task('concatification', function(){
     const TagsList = fctPerso.innerConcatification();
 
     const scriptsPathList = fctPerso.getScriptsPath(TagsList).map(function (v) {
+        console.log(v);
         return path.resolve(source, v);
     });
+
+
     const stylesPathList = fctPerso.getStylesPath(TagsList).map(function (v) {
         return path.resolve(source, v);
     });
@@ -57,7 +82,7 @@ gulp.task('concatification', function(){
                     //TRAITEMENT DES SCRIPTS À METTRE EN DERNIER
                     console.log("traitement des scripts à appeler en dernier.");
                     fctPerso.innerLaSToC().forEach(function (val, ind, arr) {
-                        fctPerso.gestExtScript(val);
+                        fctPerso.getExtScript(val);
                     });
                 }
             }
