@@ -2,8 +2,32 @@
  * Created by PRJS12821 on 17/10/2017.
  */
 "use strict";
-
 //@NOTE: DEPRECATED METHODS
+
+let SRCFOLDERNAME = path.parse(SOURCE).base;
+
+/**
+ * @deprecated (SYNC) INSÈRE EN FIN DE BODY UN SCRIPT À APPELLER EN DERNIER
+ * @param {string} scriptTag - la balise complète à insèrer
+ * @param {string} [fileIndexPath] - chemin vers le fichier index.html de distribution
+ */
+function insertLaSToC(scriptTag, fileIndexPath){
+    fileIndexPath = fileIndexPath || path.resolve(DESTINATION, "index.html");
+
+    let html = fs.readFileSync(fileIndexPath, "utf8");
+
+    const posHead = html.indexOf("</body>");
+    if (posHead !== -1){
+        html = html.replace("</body>", scriptTag + "</body>");
+
+        fs.writeFileSync(fileIndexPath, html, "utf8");
+    }
+    else{
+        throw "balise body introuvable.";
+    }
+}
+
+
 /**
  * @deprecated INTIALISE LE NOM DU DOSSIER DES SOURCES
  * @param {string} srcPath

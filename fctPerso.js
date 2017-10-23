@@ -2,6 +2,12 @@
 
 const fs = require("fs");
 const path = require("path");
+const pump = require('pump');
+const gulp = require('gulp');
+const concat = require('gulp-concat');
+const uglify_es = require('uglify-es');
+const gulp_uglify_js = require('gulp-uglify-es').default;
+const cleanCSS = require('gulp-clean-css');
 
 // DOSSIER DE TRAVAIL
 const SOURCE = path.resolve('./src');
@@ -20,7 +26,6 @@ const REGEXPSTRINGINSTRING = /["|'].*?["|']/;
 const REGEXPCOMMENTMULTIPLELINE = /\/\*.*\*\//g;
 const PATHSEPARATOR = path.sep;
 const INDEXFILENAME = "index.html";
-let SRCFOLDERNAME = path.parse(SOURCE).base;
 
 /**
  * (SYNC) SUPPRIME UN RÉPERTOIRE MÊME SI IL Y A DES FICHIERS/DOSSIERS À L'INTÉRIEUR DE MANIÈRE RÉCURSIVE
@@ -103,8 +108,6 @@ function generateIndexHTMLFile() {
         <!--/CONCATIFICATION-->
         </head>
     <body>
-        <!--CONCATIFICATION-->
-        <!--/CONCATIFICATION-->
         <!--LASTOC-->
         <!--/LASTOC-->
     </body>
@@ -139,42 +142,38 @@ function insertStyle (stylePath, filePath) {
 
 /**
  * (SYNC) AJOUTE UNE BALISE DE SCRIPT EN FIN DE BODY
- * @param {string} scriptPath chemin du fichier de script
+ * @param {string} scriptObj chemin du fichier de script
+ * @param {string} dest balise de destination
  * @param {string} [filePath] chemin du fichier index.html
  */
-function insertScript(scriptPath, filePath){
+function insertScript(scriptObj, dest, filePath){
     filePath = filePath || path.resolve(DESTINATION, "index.html");
+    const tagInsert = dest === "body" ? "body" : "head";
 
     let html = fs.readFileSync(filePath, "utf8");
-    const posBody = html.indexOf("</body>");
+    const posHeadBody = html.indexOf(`</${tagInsert}>`);
 
-    if (posBody !== -1){
-        html = html.replace("</body>",
-            "<script src='" + normalizePath(scriptPath) + "'></script>" +
-            "</body>");
+    let props = "";
+    let l_path = "";
+    let l_content = "";
+
+    for (let prop in scriptObj.props) {
+        props += ` ${prop}="${scriptObj.props[prop]}"`;
+    }
+
+    if (scriptObj.chemin !== null){
+        l_path = ` src="${normalizePath(scriptObj.chemin)}"`;
+    }
+
+    if (scriptObj.content !== null){
+        l_content = scriptObj.content;
+    }
+
+    if (posHeadBody !== -1){
+        html = html.replace(`</${tagInsert}>`,
+            `<script${l_path}${props}>${l_content}</script></${tagInsert}>`);
 
         fs.writeFileSync(filePath, html, "utf8");
-    }
-    else{
-        throw "balise body introuvable.";
-    }
-}
-
-/**
- * (SYNC) INSÈRE EN FIN DE BODY UN SCRIPT À APPELLER EN DERNIER
- * @param {string} scriptTag - la balise complète à insèrer
- * @param {string} [fileIndexPath] - chemin vers le fichier index.html de distribution
- */
-function insertLaSToC(scriptTag, fileIndexPath){
-    fileIndexPath = fileIndexPath || path.resolve(DESTINATION, "index.html");
-
-    let html = fs.readFileSync(fileIndexPath, "utf8");
-
-    const posHead = html.indexOf("</body>");
-    if (posHead !== -1){
-        html = html.replace("</body>", scriptTag + "</body>");
-
-        fs.writeFileSync(fileIndexPath, html, "utf8");
     }
     else{
         throw "balise body introuvable.";
@@ -531,6 +530,148 @@ function getOtherProps(tag) {
     return ret;
 }
 
+function groupFiles(arr, type) {
+    const filesGroup = [[]];
+
+    arr[(type === "script" ? "scriptsTab" : "stylesTab")]
+        .forEach(function (val, ind, arr) {
+            if (!val.isMovable) {
+                if (ind === 0) {
+                    filesGroup[filesGroup.length - 1].push(val);
+                    ind < arr.length - 1 && arr[ind+1].isMovable && filesGroup.push([]);
+                }
+                else {
+                    filesGroup.push([]);
+                    filesGroup[filesGroup.length - 1].push(val);
+                    ind < arr.length - 1 && arr[ind+1].isMovable && filesGroup.push([]);
+                }
+            }
+            else {
+                filesGroup[filesGroup.length - 1].push(val);
+            }
+        });
+
+    return filesGroup/*.filter(function (val) {
+        return val.length > 0;
+    })*/;
+}
+
+/**
+ * LA FABULEUSE CONCATIFICATION JS !!!
+ * @param {Array} arr le tableau d'objets à traiter
+ * @param {String} [suffix] le suffix éventuel à ajouter au fichier concatifié
+ * @returns {Array} la liste des scripts à inclure dans le head
+ */
+function concatiFicationJS(arr, suffix) {
+    const final_JS_in_DOM = [];
+
+    arr.forEach(function (val, ind) {
+        const JSfileName = `${new Date().getTime().toString()}-${ind+1}${suffix !== undefined ? `-${suffix.toString()}` : ""}-dist.js`;
+
+        //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET N'A PAS DE CONTENU: C'EST UN SCRIPT SEUL À INCLURE TEL QU'IL EST EN AJOUTANT SES ÉVENTUELLES PROPRIÉTÉS
+        if (!val[0].isMovable && !val[0].content){
+            console.log(`déplacement du fichier JS ${val[0].chemin}`);
+            final_JS_in_DOM.push(val[0]);
+        }
+        else{
+            //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET A UN CONTENU: C'EST UN SCRIPT SEUL À MINIFIER EN AJOUTANT SES ÉVENTUELLES PROPRIÉTÉS
+            if (!val[0].isMovable && val[0].content){
+                val[0].content = uglify_es.minify(
+                    { file: val[0].content },
+                    { ie8: true }
+                ).code;
+
+                final_JS_in_DOM.push(val[0]);
+
+                console.log(`fin de traitement du script inline`);
+            }
+            else{
+                //SI LE FICHIER EST DÉPLAÇABLE: IL EST À MINIFIER ET À CONCATÉNER AVEC SES SUIVANTS
+                final_JS_in_DOM.push({
+                    chemin: JSfileName,
+                    isMovable: true,
+                    content: null,
+                    props: {}
+                });
+
+                pump([
+                        gulp.src(val.map(function (v) {
+                            return path.resolve(SOURCE, v.chemin)
+                        })),
+                        concat(JSfileName),
+                        gulp_uglify_js(),
+                        gulp.dest(DESTINATION + "/JS")
+                    ],
+                    function (err) {
+                        if (err){
+                            console.error(err);
+                        }
+
+                        console.log(`fin de traitement du script ${JSfileName}`);
+                    });
+            }
+        }
+    });
+
+    return final_JS_in_DOM;
+}
+
+/**
+ * LA FABULEUSE CONCATIFICATION CSS !!!
+ * @param {Array} arr le tableau d'objets à traiter
+ * @param {String} [suffix] le suffix éventuel à ajouter au fichier concatifié
+ */
+function concatiFicationCSS(arr, suffix) {
+    arr.forEach(function (val, ind) {
+        const CSSfileName = `${new Date().getTime().toString()}-${ind+1}${suffix !== undefined ? `-${suffix.toString()}` : ""}-dist.css`;
+
+        //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET N'A PAS DE CONTENU: C'EST UN SCRIPT SEUL À INCLURE TEL QU'IL EST
+        if (!val[0].isMovable && !val.content){
+            console.log(`déplacement du fichier CSS ${val[0].chemin ? val[0].chemin : "inline"}`);
+        }
+        else{
+            //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET A UN CONTENU: C'EST UN SCRIPT SEUL À MINIFIER
+            if (!val[0].isMovable && val.content){
+                pump([
+                        gulp.src(path.resolve(SOURCE, val[0].chemin)),
+                        concat(CSSfileName),
+                        cleanCSS({
+                            keepSpecialComments: 0
+                        }),
+                        gulp.dest(DESTINATION + "/CSS")
+                    ],
+                    function (err) {
+                        if (err){
+                            console.error(err);
+                        }
+
+                        console.log(`fin de traitement du style ${CSSfileName}`);
+                    });
+            }
+            else{
+                //SI LE FICHIER EST DÉPLAÇABLE: IL EST À MINIFIER ET À CONCATÉNER AVEC SES SUIVANTS
+                pump([
+                        gulp.src(val.map(function (v) {
+                            return path.resolve(SOURCE, v.chemin)
+                        })),
+                        concat(CSSfileName),
+                        cleanCSS({
+                            keepSpecialComments: 0
+                        }),
+                        gulp.dest(DESTINATION + "/CSS")
+                    ],
+                    function (err) {
+                        if (err){
+                            console.error(err);
+                        }
+
+                        console.log(`fin de traitement du style ${CSSfileName}`);
+                    });
+            }
+        }
+    });
+}
+
 module.exports.deleteFuckingFolder = deleteFuckingFolder;
 module.exports.createIndexHTMLFile = createIndexHTMLFile;
 module.exports.insertStyle = insertStyle;
@@ -540,9 +681,11 @@ module.exports.getScriptsPath = getScriptsPath;
 module.exports.getStylesPath = getStylesPath;
 module.exports.duplicateFolder = duplicateFolder;
 module.exports.generateIndexHTMLFile = generateIndexHTMLFile;
-module.exports.insertLaSToC = insertLaSToC;
 module.exports.innerLaSToC = innerLaSToC;
 module.exports.getExtScript = getExtScript;
+module.exports.groupFiles = groupFiles;
+module.exports.concatiFicationJS = concatiFicationJS;
+module.exports.concatiFicationCSS = concatiFicationCSS;
 
 //POUR LES TESTS
 module.exports.isMovable = isMovable;

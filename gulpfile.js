@@ -31,10 +31,45 @@ gulp.task('min', function(){
 
     // console.log("liste des balises");
     const TagsList = fctPerso.innerTag(REGEXPINNERCONCATTAG);
-    console.log(TagsList);
+    // console.log(TagsList);
+    console.log(TagsList.scriptsTab.length, `fichier${(TagsList.scriptsTab.length > 1 ? 's': '')} de JS à traiter`);
+    console.log(TagsList.stylesTab.length, `fichier${(TagsList.stylesTab.length > 1 ? 's': '')} de CSS à traiter`);
 
     const LastTagslist = fctPerso.innerTag(REGEXPINNERLASTOCTAG);
-    console.log(LastTagslist);
+    // console.log(LastTagslist);
+    console.log(LastTagslist.scriptsTab.length, `fichier${(LastTagslist.scriptsTab.length > 1 ? 's': '')} de JS à traiter en dernier`);
+    console.log(LastTagslist.stylesTab.length, `fichier${(LastTagslist.stylesTab.length > 1 ? 's': '')} de CSS à traiter en dernier`);
+
+
+    const groupScripts1 = fctPerso.groupFiles(TagsList, "script");
+    const groupStyles1 = fctPerso.groupFiles(TagsList, "style");
+    // console.log("scripts:", groupScripts1);
+    // console.log("styles:", groupStyles1);
+
+    const groupScripts2 = fctPerso.groupFiles(LastTagslist, "script");
+    const groupStyles2 = fctPerso.groupFiles(LastTagslist, "style");
+    // console.log("scripts 2:", groupScripts2);
+    // console.log("styles 2:", groupStyles2);
+
+    const listeJS = fctPerso.concatiFicationJS(groupScripts1);
+    const listeJSLast = fctPerso.concatiFicationJS(groupScripts2, "last");
+/*
+    const listeCSS = fctPerso.concatiFicationCSS(groupStyles1);
+    const listeCSSLast = fctPerso.concatiFicationCSS(groupStyles2, "last");
+*/
+
+    // console.log("liste des scripts:", listeJS);
+    // console.log("liste des scripts 'last':", listeJSLast);
+
+    listeJS.forEach(function (val) {
+        fctPerso.insertScript(val, "head");
+    });
+
+    listeJSLast.forEach(function (val) {
+        fctPerso.insertScript(val, "body");
+    });
+
+    console.log("fichier index.html terminé.");
 });
 
 gulp.task("concatification", function (arg) {
@@ -53,7 +88,6 @@ gulp.task("concatification", function (arg) {
         console.log(v);
         return path.resolve(source, v);
     });
-
 
     const stylesPathList = fctPerso.getStylesPath(TagsList).map(function (v) {
         return path.resolve(source, v);
