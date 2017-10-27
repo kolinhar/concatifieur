@@ -4,10 +4,10 @@ const fs = require("fs");
 const path = require("path");
 const pump = require('pump');
 const gulp = require('gulp');
+const clean_css = require('clean-css');
 const concat = require('gulp-concat');
-const uglify_es = require('uglify-es');
-const gulp_uglify_js = require('gulp-uglify-es').default;
-const cleanCSS = require('gulp-clean-css');
+const gulp_clean_css = require('gulp-clean-css');
+const babel_core = require("babel-core");
 
 // DOSSIER DE TRAVAIL
 const SOURCE = path.resolve('./src');
@@ -57,8 +57,6 @@ function deleteFuckingFolder (folder) {
 function createIndexHTMLFile (indexOrig, pathDest){
     indexOrig = indexOrig || path.resolve(SOURCE, "index.html");
     pathDest = pathDest || DESTINATION;
-
-    //console.log(indexOrig, pathDest);
 
     if(!fs.existsSync(pathDest))
         fs.mkdirSync(pathDest);
@@ -119,31 +117,49 @@ function generateIndexHTMLFile() {
 
 /**
  * (SYNC) AJOUTE UNE BALISE DE STYLE EN FIN DE HEAD
- * @param {string} stylePath chemin du fichier de style
+ * @param {string} styleObj chemin du fichier de style
+ * @param {string} [dest] balise de destination ('head' ou 'body')
  * @param {string} [filePath] chemin du fichier index.html
  */
-function insertStyle (stylePath, filePath) {
+function insertStyle (styleObj, dest, filePath) {
     filePath = filePath || path.resolve(DESTINATION, "index.html");
+    const tagInsert = dest === "body" ? "body" : "head";
 
     let html = fs.readFileSync(filePath, "utf8");
-    const posHead = html.indexOf("</head>");
+    const posHeadBody = html.indexOf(`</${tagInsert}>`);
 
-    if (posHead !== -1){
-        html = html.replace("</head>",
-            "<link rel='stylesheet' href='" + normalizePath(stylePath) + "' >" +
-            "</head>");
+    let props = "";
+    let l_path = "";
+    let l_content = "";
 
-        fs.writeFileSync(filePath, html, "utf8");
+    for (let prop in styleObj.props) {
+        props += ` ${prop}="${styleObj.props[prop]}"`;
+    }
+
+    if (posHeadBody !== -1){
+        if (styleObj.content !== null){
+            html = html.replace(`</${tagInsert}>`,
+                `<style${props}>${styleObj.content}</style></${tagInsert}>`);
+
+            fs.writeFileSync(filePath, html, "utf8");
+
+        }
+        else{
+            html = html.replace(`</${tagInsert}>`,
+                `<link rel="stylesheet" href="${normalizePath(styleObj.chemin)}"${props} /></${tagInsert}>`);
+
+            fs.writeFileSync(filePath, html, "utf8");
+        }
     }
     else{
-        throw "balise head introuvable.";
+        throw `balise ${tagInsert} introuvable.`;
     }
 }
 
 /**
- * (SYNC) AJOUTE UNE BALISE DE SCRIPT EN FIN DE BODY
+ * (SYNC) AJOUTE UNE BALISE DE SCRIPT EN FIN DE BALISE PASSÉ EN PARAMÈTRE
  * @param {string} scriptObj chemin du fichier de script
- * @param {string} dest balise de destination
+ * @param {string} [dest] balise de destination ('head' ou 'body')
  * @param {string} [filePath] chemin du fichier index.html
  */
 function insertScript(scriptObj, dest, filePath){
@@ -176,7 +192,7 @@ function insertScript(scriptObj, dest, filePath){
         fs.writeFileSync(filePath, html, "utf8");
     }
     else{
-        throw "balise body introuvable.";
+        throw `balise ${tagInsert} introuvable.`;
     }
 }
 
@@ -494,7 +510,7 @@ function deleteCommentTag(thisStr, tagName) {
         });
 
     tabStr.forEach(function (val) {
-        //SUPPRESSION DES BALISES CONCATIFICATION
+        //SUPPRESSION DES BALISES
         thisStr = thisStr.replace(val, "");
     });
 
@@ -530,6 +546,12 @@ function getOtherProps(tag) {
     return ret;
 }
 
+/**
+ *
+ * @param {Array} arr
+ * @param {String} type
+ * @returns {Array}
+ */
 function groupFiles(arr, type) {
     const filesGroup = [[]];
 
@@ -551,9 +573,7 @@ function groupFiles(arr, type) {
             }
         });
 
-    return filesGroup/*.filter(function (val) {
-        return val.length > 0;
-    })*/;
+    return filesGroup;
 }
 
 /**
@@ -576,10 +596,12 @@ function concatiFicationJS(arr, suffix) {
         else{
             //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET A UN CONTENU: C'EST UN SCRIPT SEUL À MINIFIER EN AJOUTANT SES ÉVENTUELLES PROPRIÉTÉS
             if (!val[0].isMovable && val[0].content){
-                val[0].content = uglify_es.minify(
-                    { file: val[0].content },
-                    { ie8: true }
-                ).code;
+                val[0].content = babel_core.transform(val[0].content, {
+                    presets: ["es2015"],
+                    compact: true,
+                    comments: false,
+                    minified: true
+                }).code;
 
                 final_JS_in_DOM.push(val[0]);
 
@@ -599,15 +621,30 @@ function concatiFicationJS(arr, suffix) {
                             return path.resolve(SOURCE, v.chemin)
                         })),
                         concat(JSfileName),
-                        gulp_uglify_js(),
-                        gulp.dest(DESTINATION + "/JS")
+                        gulp.dest(`${DESTINATION}${PATHSEPARATOR}JS`)
                     ],
                     function (err) {
                         if (err){
                             console.error(err);
+                            return;
                         }
 
-                        console.log(`fin de traitement du script ${JSfileName}`);
+                        babel_core.transformFile(`${DESTINATION}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, {
+                            presets: ["es2015"],
+                            compact: true,
+                            comments: false,
+                            minified: true
+                        }, function (err, result) {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+
+                            fs.writeFileSync(`${DESTINATION}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, result.code);
+
+                            console.log(`fin de traitement du script ${JSfileName}`);
+                        });
+
                     });
             }
         }
@@ -622,40 +659,39 @@ function concatiFicationJS(arr, suffix) {
  * @param {String} [suffix] le suffix éventuel à ajouter au fichier concatifié
  */
 function concatiFicationCSS(arr, suffix) {
+    const final_CSS_in_DOM = [];
+
     arr.forEach(function (val, ind) {
         const CSSfileName = `${new Date().getTime().toString()}-${ind+1}${suffix !== undefined ? `-${suffix.toString()}` : ""}-dist.css`;
 
-        //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET N'A PAS DE CONTENU: C'EST UN SCRIPT SEUL À INCLURE TEL QU'IL EST
-        if (!val[0].isMovable && !val.content){
-            console.log(`déplacement du fichier CSS ${val[0].chemin ? val[0].chemin : "inline"}`);
+        //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET N'A PAS DE CONTENU: C'EST UN STYLE SEUL À INCLURE TEL QU'IL EST EN AJOUTANT SES ÉVENTUELLES PROPRIÉTÉS
+        if (!val[0].isMovable && !val[0].content){
+            final_CSS_in_DOM.push(val[0]);
+            console.log(`déplacement du fichier CSS ${val[0].chemin}`);
         }
         else{
-            //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET A UN CONTENU: C'EST UN SCRIPT SEUL À MINIFIER
-            if (!val[0].isMovable && val.content){
-                pump([
-                        gulp.src(path.resolve(SOURCE, val[0].chemin)),
-                        concat(CSSfileName),
-                        cleanCSS({
-                            keepSpecialComments: 0
-                        }),
-                        gulp.dest(DESTINATION + "/CSS")
-                    ],
-                    function (err) {
-                        if (err){
-                            console.error(err);
-                        }
+            //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET A UN CONTENU: C'EST UN STYLE SEUL À MINIFIER EN AJOUTANT SES ÉVENTUELLES PROPRIÉTÉS
+                if (!val[0].isMovable && val[0].content){
+                    val[0].content = new clean_css({compatibility: "ie8"}).minify(val[0].content).styles;
 
-                        console.log(`fin de traitement du style ${CSSfileName}`);
-                    });
-            }
+                    final_CSS_in_DOM.push(val[0]);
+                    console.log("fin de traitement du style inline");
+                }
             else{
                 //SI LE FICHIER EST DÉPLAÇABLE: IL EST À MINIFIER ET À CONCATÉNER AVEC SES SUIVANTS
+                    final_CSS_in_DOM.push({
+                        chemin: CSSfileName,
+                        isMovable: true,
+                        content: null,
+                        props: {}
+                    });
+
                 pump([
                         gulp.src(val.map(function (v) {
                             return path.resolve(SOURCE, v.chemin)
                         })),
                         concat(CSSfileName),
-                        cleanCSS({
+                        gulp_clean_css({
                             keepSpecialComments: 0
                         }),
                         gulp.dest(DESTINATION + "/CSS")
@@ -670,6 +706,8 @@ function concatiFicationCSS(arr, suffix) {
             }
         }
     });
+
+    return final_CSS_in_DOM;
 }
 
 module.exports.deleteFuckingFolder = deleteFuckingFolder;

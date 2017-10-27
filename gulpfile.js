@@ -1,10 +1,5 @@
 const gulp = require('gulp');
-const pump = require('pump');
-const path = require('path');
 const fctPerso = require('./fctPerso.js');
-const concat = require('gulp-concat');
-const uglify = require('gulp-uglify-es').default;
-const cleanCSS = require('gulp-clean-css');
 
 const REGEXPINNERCONCATTAG = /<!--CONCATIFICATION-->(.|\r|\n)*?<!--\/CONCATIFICATION-->/g;
 const REGEXPINNERLASTOCTAG = /<!--LASTOC-->(\r|\n|.)*?<!--\/LASTOC-->/g;
@@ -19,7 +14,7 @@ gulp.task('default', function() {
     console.log("Hello World!");
 });
 
-gulp.task('min', function(){
+gulp.task('min', function(callback){
     fctPerso.deleteFuckingFolder(destination);
     // console.log("Concaténation et minification des fichiers JS et CSS");
 
@@ -53,18 +48,25 @@ gulp.task('min', function(){
 
     const listeJS = fctPerso.concatiFicationJS(groupScripts1);
     const listeJSLast = fctPerso.concatiFicationJS(groupScripts2, "last");
-/*
+
     const listeCSS = fctPerso.concatiFicationCSS(groupStyles1);
     const listeCSSLast = fctPerso.concatiFicationCSS(groupStyles2, "last");
-*/
 
     // console.log("liste des scripts:", listeJS);
     // console.log("liste des scripts 'last':", listeJSLast);
+    // console.log("liste des styles:", listeCSS);
+    // console.log("liste des styles 'last':", listeCSSLast);
 
+    listeCSS.forEach(function (val) {
+        fctPerso.insertStyle(val, "head");
+    });
     listeJS.forEach(function (val) {
         fctPerso.insertScript(val, "head");
     });
 
+    listeCSSLast.forEach(function (val) {
+        fctPerso.insertStyle(val, "body");
+    });
     listeJSLast.forEach(function (val) {
         fctPerso.insertScript(val, "body");
     });
@@ -72,6 +74,7 @@ gulp.task('min', function(){
     console.log("fichier index.html terminé.");
 });
 
+/*
 gulp.task("concatification", function (arg) {
     fctPerso.deleteFuckingFolder(destination);
     console.log("Concaténation et minification des fichiers JS et CSS");
@@ -147,6 +150,7 @@ gulp.task("concatification", function (arg) {
     }
 
 });
+*/
 
 gulp.task('init', function () {
     fctPerso.generateIndexHTMLFile();
