@@ -28,7 +28,8 @@ const INDEXFILENAME = "index.html";
 
 /**
  * (SYNC) SUPPRIME UN RÉPERTOIRE MÊME SI IL Y A DES FICHIERS/DOSSIERS À L'INTÉRIEUR DE MANIÈRE RÉCURSIVE
- * @param {string} folder - le chemin vers le répertoire à supprimer
+ * @param {String} folder - le chemin vers le répertoire à supprimer
+ * @returns {Boolean} - true si le répertoire a été supprimé, false si il n'existe pas
  */
 function deleteFuckingFolder (folder) {
     folder = path.resolve(folder);
@@ -45,7 +46,10 @@ function deleteFuckingFolder (folder) {
         });
 
         fs.rmdirSync(folder);
+        return true
     }
+
+    return false;
 }
 
 /**
@@ -552,10 +556,12 @@ function groupFiles(arr, type) {
  * LA FABULEUSE CONCATIFICATION JS !!!
  * @param {Array} arr le tableau d'objets à traiter
  * @param {String} [suffix] le suffix éventuel à ajouter au fichier concatifié
- * @returns {Array} la liste des scripts à inclure dans le head
+ * @returns {Array} la liste des scripts à inclure dans le head ou le body
  */
 function concatiFicationJS(arr, suffix) {
     const final_JS_in_DOM = [];
+    //CALCULE DE LA TAILLE DU TABLEAU, DÉCRÉMENTER À CHAQUE ITÉRATION ET QUAND ON ARRIVE À 0, ON SUPPRIME LE RÉPERTOIRE TEMPORAIRE CORRESPONDANT (TEMPJS OU TEMPJS-LASTOC) UNIQUEMENT SI IL A ÉTÉ CRÉÉ
+    let cptArr = arr.length;
 
     arr.forEach(function (val, ind) {
         const JSfileName = `${new Date().getTime().toString()}-${ind+1}${suffix !== undefined ? `-${suffix.toString()}` : ""}-dist.js`;
@@ -564,6 +570,8 @@ function concatiFicationJS(arr, suffix) {
         if (!val[0].isMovable && !val[0].content){
             console.log(`déplacement du fichier JS ${val[0].chemin}`);
             final_JS_in_DOM.push(val[0]);
+            cptArr--;
+            deleteTemp(cptArr, `TempJS${(suffix ? "-lastoc":"")}`);
         }
         else{
             //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET A UN CONTENU: C'EST UN SCRIPT SEUL À MINIFIER EN AJOUTANT SES ÉVENTUELLES PROPRIÉTÉS
@@ -578,6 +586,8 @@ function concatiFicationJS(arr, suffix) {
                 final_JS_in_DOM.push(val[0]);
 
                 console.log(`fin de traitement du script inline`);
+                cptArr--;
+                deleteTemp(cptArr, `TempJS${(suffix ? "-lastoc":"")}`);
             }
             else{
                 //SI LE FICHIER EST DÉPLAÇABLE: IL EST À MINIFIER ET À CONCATÉNER AVEC SES SUIVANTS
@@ -615,6 +625,8 @@ function concatiFicationJS(arr, suffix) {
                             fs.writeFileSync(`${DESTINATION}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, result.code);
 
                             console.log(`fin de traitement du script ${JSfileName}`);
+                            cptArr--;
+                            deleteTemp(cptArr, `TempJS${(suffix ? "-lastoc":"")}`);
                         });
                     });
             }
@@ -628,9 +640,13 @@ function concatiFicationJS(arr, suffix) {
  * LA FABULEUSE CONCATIFICATION CSS !!!
  * @param {Array} arr le tableau d'objets à traiter
  * @param {String} [suffix] le suffix éventuel à ajouter au fichier concatifié
+ * @returns {Array} la liste des styles à inclure dans le head ou le body
  */
 function concatiFicationCSS(arr, suffix) {
     const final_CSS_in_DOM = [];
+    //CALCULE DE LA TAILLE DU TABLEAU, DÉCRÉMENTER À CHAQUE ITÉRATION ET QUAND ON ARRIVE À 0, ON SUPPRIME LE RÉPERTOIRE TEMPORAIRE CORRESPONDANT (TempCSS OU TempCSS-lastoc) UNIQUEMENT SI IL A ÉTÉ CRÉÉ
+    let cptArr = arr.length;
+
 
     arr.forEach(function (val, ind) {
         const CSSfileName = `${new Date().getTime().toString()}-${ind+1}${suffix !== undefined ? `-${suffix.toString()}` : ""}-dist.css`;
@@ -639,6 +655,8 @@ function concatiFicationCSS(arr, suffix) {
         if (!val[0].isMovable && !val[0].content){
             final_CSS_in_DOM.push(val[0]);
             console.log(`déplacement du fichier CSS ${val[0].chemin}`);
+            cptArr--;
+            deleteTemp(cptArr, `TempCSS${(suffix ? "-lastoc":"")}`);
         }
         else{
             //SI LE FICHIER N'EST PAS DÉPLAÇABLE ET A UN CONTENU: C'EST UN STYLE SEUL À MINIFIER EN AJOUTANT SES ÉVENTUELLES PROPRIÉTÉS
@@ -647,6 +665,9 @@ function concatiFicationCSS(arr, suffix) {
 
                     final_CSS_in_DOM.push(val[0]);
                     console.log("fin de traitement du style inline");
+                    cptArr--;
+                    deleteTemp(cptArr, `TempCSS${(suffix ? "-lastoc":"")}`);
+
                 }
             else{
                 //SI LE FICHIER EST DÉPLAÇABLE: IL EST À MINIFIER ET À CONCATÉNER AVEC SES SUIVANTS
@@ -674,6 +695,8 @@ function concatiFicationCSS(arr, suffix) {
                         }
 
                         console.log(`fin de traitement du style ${CSSfileName}`);
+                        cptArr--;
+                        deleteTemp(cptArr, `TempCSS${(suffix ? "-lastoc":"")}`);
                     });
             }
         }
@@ -681,6 +704,21 @@ function concatiFicationCSS(arr, suffix) {
 
     return final_CSS_in_DOM;
 }
+
+/**
+ * SUPPRIME LE RÉPERTOIRE dir ET SON CONTENU PASSÉ EN PARAMÈTRE QUAND len EST À 0
+ * @param {Number} len
+ * @param {String} dir le répertoire à supprimer
+ * @returns {Boolean} true si le répertoire a été supprimé sinon false
+ */
+function deleteTemp(len, dir) {
+    if (len === 0){
+        console.log(`suppression du répertoire temporaire ${dir}`);
+        return deleteFuckingFolder(dir);
+    }
+    return false;
+}
+
 
 module.exports.deleteFuckingFolder = deleteFuckingFolder;
 module.exports.createIndexHTMLFile = createIndexHTMLFile;
