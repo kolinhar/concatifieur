@@ -15,10 +15,19 @@ gulp.task('default', function() {
 });
 
 gulp.task('min', function(){
+    _min();
+});
+
+gulp.task('init', function () {
+    _init();
+});
+
+function _init() {
+    fctPerso.generateIndexHTMLFile();
+}
+
+function _min() {
     fctPerso.deleteFuckingFolder(destination);
-    fctPerso.deleteFuckingFolder("TempJS");
-    fctPerso.deleteFuckingFolder("TempJS-lastoc");
-    fctPerso.deleteFuckingFolder("TempCSS");
     // console.log("Concaténation et minification des fichiers JS et CSS");
 
     fctPerso.createIndexHTMLFile();
@@ -30,13 +39,13 @@ gulp.task('min', function(){
     // console.log("liste des balises");
     const TagsList = fctPerso.innerTag(REGEXPINNERCONCATTAG);
     // console.log(TagsList);
-    console.log(TagsList.scriptsTab.length, `fichier${(TagsList.scriptsTab.length > 1 ? 's': '')} de JS à traiter`);
-    console.log(TagsList.stylesTab.length, `fichier${(TagsList.stylesTab.length > 1 ? 's': '')} de CSS à traiter`);
+    // console.log(TagsList.scriptsTab.length, `fichier${(TagsList.scriptsTab.length > 1 ? 's': '')} de JS à traiter`);
+    // console.log(TagsList.stylesTab.length, `fichier${(TagsList.stylesTab.length > 1 ? 's': '')} de CSS à traiter`);
 
     const LastTagslist = fctPerso.innerTag(REGEXPINNERLASTOCTAG);
     // console.log(LastTagslist);
-    console.log(LastTagslist.scriptsTab.length, `fichier${(LastTagslist.scriptsTab.length > 1 ? 's': '')} de JS à traiter en dernier`);
-    console.log(LastTagslist.stylesTab.length, `fichier${(LastTagslist.stylesTab.length > 1 ? 's': '')} de CSS à traiter en dernier`);
+    // console.log(LastTagslist.scriptsTab.length, `fichier${(LastTagslist.scriptsTab.length > 1 ? 's': '')} de JS à traiter en dernier`);
+    // console.log(LastTagslist.stylesTab.length, `fichier${(LastTagslist.stylesTab.length > 1 ? 's': '')} de CSS à traiter en dernier`);
 
     const groupScripts1 = fctPerso.groupFiles(TagsList, "script");
     const groupStyles1 = fctPerso.groupFiles(TagsList, "style");
@@ -74,8 +83,7 @@ gulp.task('min', function(){
     });
 
     console.log("fichier index.html terminé.");
-});
+}
 
-gulp.task('init', function () {
-    fctPerso.generateIndexHTMLFile();
-});
+module.exports.min = _min;
+module.exports.init = _init;

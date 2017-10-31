@@ -585,7 +585,7 @@ function concatiFicationJS(arr, suffix) {
 
                 final_JS_in_DOM.push(val[0]);
 
-                console.log(`fin de traitement du script inline`);
+                // console.log(`fin de traitement du script inline`);
                 cptArr--;
                 deleteTemp(cptArr, `TempJS${(suffix ? "-lastoc":"")}`);
             }
@@ -664,7 +664,7 @@ function concatiFicationCSS(arr, suffix) {
                     val[0].content = new clean_css({compatibility: "ie8"}).minify(val[0].content).styles;
 
                     final_CSS_in_DOM.push(val[0]);
-                    console.log("fin de traitement du style inline");
+                    // console.log("fin de traitement du style inline");
                     cptArr--;
                     deleteTemp(cptArr, `TempCSS${(suffix ? "-lastoc":"")}`);
 
@@ -713,7 +713,7 @@ function concatiFicationCSS(arr, suffix) {
  */
 function deleteTemp(len, dir) {
     if (len === 0){
-        console.log(`suppression du répertoire temporaire ${dir}`);
+        // console.log(`suppression du répertoire temporaire ${dir}`);
         return deleteFuckingFolder(dir);
     }
     return false;
