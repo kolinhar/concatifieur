@@ -14,8 +14,11 @@ gulp.task('default', function() {
     console.log("Hello World!");
 });
 
-gulp.task('min', function(callback){
+gulp.task('min', function(){
     fctPerso.deleteFuckingFolder(destination);
+    fctPerso.deleteFuckingFolder("TempJS");
+    fctPerso.deleteFuckingFolder("TempJS-lastoc");
+    fctPerso.deleteFuckingFolder("TempCSS");
     // console.log("Concaténation et minification des fichiers JS et CSS");
 
     fctPerso.createIndexHTMLFile();
@@ -34,7 +37,6 @@ gulp.task('min', function(callback){
     // console.log(LastTagslist);
     console.log(LastTagslist.scriptsTab.length, `fichier${(LastTagslist.scriptsTab.length > 1 ? 's': '')} de JS à traiter en dernier`);
     console.log(LastTagslist.stylesTab.length, `fichier${(LastTagslist.stylesTab.length > 1 ? 's': '')} de CSS à traiter en dernier`);
-
 
     const groupScripts1 = fctPerso.groupFiles(TagsList, "script");
     const groupStyles1 = fctPerso.groupFiles(TagsList, "style");
@@ -73,84 +75,6 @@ gulp.task('min', function(callback){
 
     console.log("fichier index.html terminé.");
 });
-
-/*
-gulp.task("concatification", function (arg) {
-    fctPerso.deleteFuckingFolder(destination);
-    console.log("Concaténation et minification des fichiers JS et CSS");
-
-    fctPerso.createIndexHTMLFile();
-    console.log("création du fichier index.html terminée.");
-    //MISE EN 'PROD'
-    fctPerso.duplicateFolder(source, destination);
-    console.log("copie des fichiers terminée");
-
-    const TagsList = fctPerso.innerConcatification();
-
-    const scriptsPathList = fctPerso.getScriptsPath(TagsList).map(function (v) {
-        console.log(v);
-        return path.resolve(source, v);
-    });
-
-    const stylesPathList = fctPerso.getStylesPath(TagsList).map(function (v) {
-        return path.resolve(source, v);
-    });
-
-    console.log("JS:", scriptsPathList.length, " fichier(s)");
-    console.log("CSS:", stylesPathList.length, " fichier(s)");
-
-    if (scriptsPathList.length > 0){
-        const JSfileName = new Date().getTime().toString() + '-dist.js';
-        pump([
-                gulp.src(scriptsPathList),
-                concat(JSfileName),
-                uglify(),
-                gulp.dest(destination + "/JS")
-            ],
-            function (err) {
-                if (err != null){
-                    console.error(err);
-                }
-                else{
-                    console.log("concatification JS terminée.");
-                    fctPerso.insertScript("/JS/" + JSfileName);
-                    console.log("ajout du script à la page terminé.");
-
-                    //TRAITEMENT DES SCRIPTS À METTRE EN DERNIER
-                    console.log("traitement des scripts à appeler en dernier.");
-                    fctPerso.innerLaSToC().forEach(function (val, ind, arr) {
-                        fctPerso.getExtScript(val);
-                    });
-                }
-            }
-        );
-    }
-
-    if (stylesPathList.length > 0){
-        const CSSfileName = new Date().getTime().toString() + '-dist.css';
-        pump([
-                gulp.src(stylesPathList),
-                concat(CSSfileName),
-                cleanCSS({
-                    keepSpecialComments: 0
-                }),
-                gulp.dest(destination + "/CSS")
-            ],
-            function (err) {
-                if (err != null){
-                    console.error(err);
-                }
-                else{
-                    console.log("concatification CSS terminée.");
-                    fctPerso.insertStyle("/CSS/" + CSSfileName);
-                    console.log("ajout du style à la page terminé.");
-                }
-            }
-        );
-    }
-
-});
-*/
 
 gulp.task('init', function () {
     fctPerso.generateIndexHTMLFile();

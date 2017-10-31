@@ -27,6 +27,64 @@ function insertLaSToC(scriptTag, fileIndexPath){
     }
 }
 
+/**
+ * @deprecated (SYNC) RECHERCHE TOUTES LES BALISES LASTOC ET RETOURNE UNE LISTE DE LEURS CONTENUS
+ * @param {string} [filePath] - le chemin du fichier
+ * @returns {Object} Objet contenant 2 tableaux pour les scripts et pour les styles
+ */
+function innerLaSToC(filePath) {
+    filePath = path.resolve(filePath || path.resolve(SOURCE, "index.html"));
+
+    const ret = {};
+    const html = fs.readFileSync(filePath, "utf8");
+
+    //RECHERCHE DE TOUTES LES BALISES LASTOC
+    const concatArr = html.match(REGEXPINNERLASTOCTAG);
+
+    //LISTER LES SCRIPTS ET LES STYLES
+    if (concatArr !== null){
+        const l_scriptTab = [],
+            l_styleTab = [];
+
+        concatArr.forEach(function (val, ind, arr) {
+            const l_scripts = val.match(REGEXSCRIPTTAG),
+                l_styles = val.match(REGEXSTYLETAG);
+
+            if (l_scripts !== null){
+                l_scripts.forEach(function (v) {
+                    let l_path = extractScriptPath(v) || null,
+                        l_content = v.match(REGEXSCRIPTINLINE);
+
+                    l_scriptTab.push({
+                        chemin: l_path,
+                        content: l_content && l_content[0].replace(/^<script(.|\r|\n)*?>/gi, "").replace(/<\/script>$/gi, ""),
+                        isMovable: isMovable(l_path),
+                        props: getOtherProps(v)
+                    });
+                });
+            }
+
+            if (l_styles !== null){
+                l_styles.forEach(function (v) {
+                    let l_path = extractStylePath(v) || null,
+                        l_content = v.match(REGEXSTYLEINLINE);
+
+                    l_styleTab.push({
+                        chemin: l_path,
+                        content: l_content && l_content[0].replace(/^<style(.|\r|\n)*?>/gi, "").replace(/<\/style>$/gi, ""),
+                        isMovable: isMovable(l_path),
+                        props: getOtherProps(v)
+                    });
+                });
+            }
+        });
+
+        ret.scriptsTab = l_scriptTab;
+        ret.stylesTab = l_styleTab;
+    }
+
+    return ret;
+}
 
 /**
  * @deprecated INTIALISE LE NOM DU DOSSIER DES SOURCES

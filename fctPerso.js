@@ -23,7 +23,6 @@ const REGEXSTYLETAG = /(<link(.|\r|\n)*?rel=['"]stylesheet['"](.|\r|\n)*?(\/)*>)
 const REGEXSTYLEINLINE = /<style(.|\r|\n)*?>(.|\r|\n)+<\/style>/gi;
 const REGEXPINNERCOMMENTTAG = /<!--\s*.*\s*-->/gm;
 const REGEXPSTRINGINSTRING = /["|'].*?["|']/;
-const REGEXPCOMMENTMULTIPLELINE = /\/\*.*\*\//g;
 const PATHSEPARATOR = path.sep;
 const INDEXFILENAME = "index.html";
 
@@ -262,7 +261,7 @@ function isDuplicableFolder(folderPath){
  * (SYNC) RECHERCHE TOUTES LES BALISES PASSÉES EN PARAMÈTRE ET RETOURNE UNE LISTE DE LEURS CONTENUS
  * @param {RegExp} regex - la regexp permettant de mettre à jour le contenu de la balise recherchée
  * @param {string} [filePath] - le chemin du fichier
- * @returns {Object} Objet contenant 2 tableaux pour les scripts et pour les styles
+ * @returns {Object} Objet contenant 2 tableaux 1 pour les scripts et 1 pour les styles
  */
 function innerTag(regex, filePath){
     filePath = path.resolve(filePath || path.resolve(SOURCE, "index.html"));
@@ -282,9 +281,24 @@ function innerTag(regex, filePath){
                 l_styles = val.match(REGEXSTYLETAG);
 
             if (l_scripts !== null){
-                l_scripts.forEach(function (v) {
+                l_scripts.forEach(function (v, i) {
                     let l_path = extractScriptPath(v) || null,
                         l_content = v.match(REGEXSCRIPTINLINE);
+
+                    /**
+                    * SI IL Y A UN CONTENU INLINE, ON CRÉÉE UN FICHIER TEMPORAIRE DANS LEQUEL ON MET LE CODE
+                    * AFIN QU'IL PUISSE ETRE CONCATÉNER ET MINIFIER AVEC LES AUTRES FICHIERS QUI LE
+                    * PRÉCÈDENT ET/OU QUI LE SUIVENT
+                    */
+                    if (!isMovable(l_path) && l_content){
+                        l_path = path.resolve(`TempJS${regex.toString().indexOf("LASTOC") !== -1 ? "-lastoc" : ""}`);
+
+                        if(!fs.existsSync(l_path))
+                            fs.mkdirSync(l_path);
+
+                        l_path += `${PATHSEPARATOR}script${i}.js`;
+                        fs.writeFileSync(l_path, l_content[0].replace(/^<script(.|\r|\n)*?>/gi, "").replace(/<\/script>$/gi, ""));
+                    }
 
                     l_scriptTab.push({
                         chemin: l_path,
@@ -296,68 +310,25 @@ function innerTag(regex, filePath){
             }
 
             if (l_styles !== null){
-                l_styles.forEach(function (v) {
+                l_styles.forEach(function (v, i) {
                     let l_path = extractStylePath(v) || null,
                         l_content = v.match(REGEXSTYLEINLINE);
 
-                    l_styleTab.push({
-                        chemin: l_path,
-                        content: l_content && l_content[0].replace(/^<style(.|\r|\n)*?>/gi, "").replace(/<\/style>$/gi, ""),
-                        isMovable: isMovable(l_path),
-                        props: getOtherProps(v)
-                    });
-                });
-            }
-        });
+                    /**
+                     * SI IL Y A UN CONTENU INLINE, ON CRÉÉE UN FICHIER TEMPORAIRE DANS LEQUEL ON MET LE CODE
+                     * AFIN QU'IL PUISSE ETRE CONCATÉNER ET MINIFIER AVEC LES AUTRES FICHIERS QUI LE
+                     * PRÉCÈDENT ET/OU QUI LE SUIVENT
+                     */
+                    if (!isMovable(l_path) && l_content){
+                        l_path = path.resolve("TempCSS");
 
-        ret.scriptsTab = l_scriptTab;
-        ret.stylesTab = l_styleTab;
-    }
+                        if (!fs.existsSync(l_path)){
+                            fs.mkdirSync(l_path);
+                        }
 
-    return ret;
-}
-
-/**
- * (SYNC) RECHERCHE TOUTES LES BALISES LASTOC ET RETOURNE UNE LISTE DE LEURS CONTENUS
- * @param {string} [filePath] - le chemin du fichier
- * @returns {Object} Objet contenant 2 tableaux pour les scripts et pour les styles
- */
-function innerLaSToC(filePath) {
-    filePath = path.resolve(filePath || path.resolve(SOURCE, "index.html"));
-
-    const ret = {};
-    const html = fs.readFileSync(filePath, "utf8");
-
-    //RECHERCHE DE TOUTES LES BALISES LASTOC
-    const concatArr = html.match(REGEXPINNERLASTOCTAG);
-
-    //LISTER LES SCRIPTS ET LES STYLES
-    if (concatArr !== null){
-        const l_scriptTab = [],
-            l_styleTab = [];
-
-        concatArr.forEach(function (val, ind, arr) {
-            const l_scripts = val.match(REGEXSCRIPTTAG),
-                l_styles = val.match(REGEXSTYLETAG);
-
-            if (l_scripts !== null){
-                l_scripts.forEach(function (v) {
-                    let l_path = extractScriptPath(v) || null,
-                        l_content = v.match(REGEXSCRIPTINLINE);
-
-                    l_scriptTab.push({
-                        chemin: l_path,
-                        content: l_content && l_content[0].replace(/^<script(.|\r|\n)*?>/gi, "").replace(/<\/script>$/gi, ""),
-                        isMovable: isMovable(l_path),
-                        props: getOtherProps(v)
-                    });
-                });
-            }
-
-            if (l_styles !== null){
-                l_styles.forEach(function (v) {
-                    let l_path = extractStylePath(v) || null,
-                        l_content = v.match(REGEXSTYLEINLINE);
+                        l_path += `${PATHSEPARATOR}style${i}.css`;
+                        fs.writeFileSync(l_path, l_content[0].replace(/^<style(.|\r|\n)*?>/gi, "").replace(/<\/style>$/gi, ""));
+                    }
 
                     l_styleTab.push({
                         chemin: l_path,
@@ -530,7 +501,6 @@ function getOtherProps(tag) {
     const result = tag.match(regexProps);
     let ret = {};
 
-
     if (result !== null){
         result.forEach(function (v) {
         v.split(/["']\s+/g).forEach(function (val) {
@@ -573,7 +543,9 @@ function groupFiles(arr, type) {
             }
         });
 
-    return filesGroup;
+    return filesGroup.filter(function (val) {
+        return val.length > 0;
+    });
 }
 
 /**
@@ -625,7 +597,7 @@ function concatiFicationJS(arr, suffix) {
                     ],
                     function (err) {
                         if (err){
-                            console.error(err);
+                            console.error("erreur pump:", err);
                             return;
                         }
 
@@ -636,7 +608,7 @@ function concatiFicationJS(arr, suffix) {
                             minified: true
                         }, function (err, result) {
                             if (err) {
-                                console.error(err);
+                                console.error("erreur babel_core.transformFile:", err);
                                 return;
                             }
 
@@ -644,7 +616,6 @@ function concatiFicationJS(arr, suffix) {
 
                             console.log(`fin de traitement du script ${JSfileName}`);
                         });
-
                     });
             }
         }
@@ -698,7 +669,8 @@ function concatiFicationCSS(arr, suffix) {
                     ],
                     function (err) {
                         if (err){
-                            console.error(err);
+                            console.error("erreur pump:", err);
+                            return;
                         }
 
                         console.log(`fin de traitement du style ${CSSfileName}`);
@@ -719,7 +691,6 @@ module.exports.getScriptsPath = getScriptsPath;
 module.exports.getStylesPath = getStylesPath;
 module.exports.duplicateFolder = duplicateFolder;
 module.exports.generateIndexHTMLFile = generateIndexHTMLFile;
-module.exports.innerLaSToC = innerLaSToC;
 module.exports.getExtScript = getExtScript;
 module.exports.groupFiles = groupFiles;
 module.exports.concatiFicationJS = concatiFicationJS;
