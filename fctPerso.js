@@ -8,11 +8,14 @@ const clean_css = require('clean-css');
 const concat = require('gulp-concat');
 const gulp_clean_css = require('gulp-clean-css');
 const babel_core = require("babel-core");
+const service = require("./service").config;
+const privateMethods = require("./privateMethods");
+const pathIsInside = require("path-is-inside");
 
 // DOSSIER DE TRAVAIL
-const SOURCE = path.resolve('./src');
+const SOURCE = service.source;
 // DOSSIER À LIVRER
-const DESTINATION = path.resolve('./dist');
+const DESTINATION = service.destination;
 
 const IGNORENAME = ".ignore";
 const REGEXPSPACEBETWEENTAGS = />\s+</gm;
@@ -22,7 +25,6 @@ const REGEXSCRIPTINLINE = /<script(.|\r|\n)*?>(.|\r|\n)+<\/script>/gi;
 const REGEXSTYLETAG = /(<link(.|\r|\n)*?rel=['"]stylesheet['"](.|\r|\n)*?(\/)*>)|(<style(.|\r|\n)*?>(.|\r|\n)*?<\/style>)/gi;
 const REGEXSTYLEINLINE = /<style(.|\r|\n)*?>(.|\r|\n)+<\/style>/gi;
 const REGEXPINNERCOMMENTTAG = /<!--\s*.*\s*-->/gm;
-const REGEXPSTRINGINSTRING = /["|'].*?["|']/;
 const PATHSEPARATOR = path.sep;
 const INDEXFILENAME = "index.html";
 
@@ -38,9 +40,11 @@ function deleteFuckingFolder (folder) {
         fs.readdirSync(folder).forEach(function(file){
             const curPath = path.resolve(folder, file);
 
-            if(fs.lstatSync(curPath).isDirectory()) { // recurse
+            if(fs.lstatSync(curPath).isDirectory()) {
+                // recurse
                 deleteFuckingFolder(curPath);
-            } else { // delete file
+            } else {
+                // delete file
                 fs.unlinkSync(curPath);
             }
         });
@@ -58,6 +62,7 @@ function deleteFuckingFolder (folder) {
  * @param {string} [pathDest] - le répertoire de destination
  */
 function createIndexHTMLFile (indexOrig, pathDest){
+    //@TODO: GÉRER LA CONFIG DES RÉPERTOIRE SOURCE ET DE DESTINATION
     indexOrig = indexOrig || path.resolve(SOURCE, "index.html");
     pathDest = pathDest || DESTINATION;
 
@@ -90,16 +95,17 @@ function createIndexHTMLFile (indexOrig, pathDest){
 /**
  * (SYNC) CRÉÉ UN FICHIER 'index.html' DANS LE RÉPERTOIRE DE TRAVAIL
  */
-function generateIndexHTMLFile() {
+function generateIndexHTMLFile(verboseMode) {
 
     if (fs.existsSync(path.resolve(SOURCE, "index.html"))){
-        console.log("Un fichier 'index.html' existe déjà dans le dossier " + SOURCE);
+        verboseMode && console.warn(`Le fichier 'index.html' existe déjà dans le dossier ${SOURCE}`);
     }
     else{
         if (!fs.existsSync(path.resolve(SOURCE)))
             fs.mkdirSync(path.resolve(SOURCE));
 
-        fs.writeFileSync(path.resolve(SOURCE, "index.html"), `<!DOCTYPE html> 
+        fs.writeFileSync(path.resolve(SOURCE, "index.html"),
+`<!DOCTYPE html> 
 <html lang='fr'>
     <head>
         <meta charset='UTF-8'>
@@ -114,7 +120,7 @@ function generateIndexHTMLFile() {
     </body>
 </html>`, "utf8");
 
-        console.log("fichier 'index.html' créé dans le dossier " + SOURCE);
+        verboseMode && console.log(`Fichier 'index.html' créé dans le dossier ${SOURCE}`);
     }
 }
 
@@ -294,7 +300,7 @@ function innerTag(regex, filePath){
                     * AFIN QU'IL PUISSE ETRE CONCATÉNER ET MINIFIER AVEC LES AUTRES FICHIERS QUI LE
                     * PRÉCÈDENT ET/OU QUI LE SUIVENT
                     */
-                    if (!isMovable(l_path) && l_content){
+                    if (!privateMethods.isMovable(l_path) && l_content){
                         l_path = path.resolve(`TempJS${regex.toString().indexOf("LASTOC") !== -1 ? "-lastoc" : ""}`);
 
                         if(!fs.existsSync(l_path))
@@ -307,15 +313,15 @@ function innerTag(regex, filePath){
                     l_scriptTab.push({
                         chemin: l_path,
                         content: l_content && l_content[0].replace(/^<script(.|\r|\n)*?>/gi, "").replace(/<\/script>$/gi, ""),
-                        isMovable: isMovable(l_path),
-                        props: getOtherProps(v)
+                        isMovable: privateMethods.isMovable(l_path),
+                        props: privateMethods.getOtherProps(v)
                     });
                 });
             }
 
             if (l_styles !== null){
                 l_styles.forEach(function (v, i) {
-                    let l_path = extractStylePath(v) || null,
+                    let l_path = privateMethods.extractStylePath(v) || null,
                         l_content = v.match(REGEXSTYLEINLINE);
 
                     /**
@@ -323,7 +329,7 @@ function innerTag(regex, filePath){
                      * AFIN QU'IL PUISSE ETRE CONCATÉNER ET MINIFIER AVEC LES AUTRES FICHIERS QUI LE
                      * PRÉCÈDENT ET/OU QUI LE SUIVENT
                      */
-                    if (!isMovable(l_path) && l_content){
+                    if (!privateMethods.isMovable(l_path) && l_content){
                         l_path = path.resolve("TempCSS");
 
                         if (!fs.existsSync(l_path)){
@@ -337,8 +343,8 @@ function innerTag(regex, filePath){
                     l_styleTab.push({
                         chemin: l_path,
                         content: l_content && l_content[0].replace(/^<style(.|\r|\n)*?>/gi, "").replace(/<\/style>$/gi, ""),
-                        isMovable: isMovable(l_path),
-                        props: getOtherProps(v)
+                        isMovable: privateMethods.isMovable(l_path),
+                        props: privateMethods.getOtherProps(v)
                     });
                 });
             }
@@ -361,15 +367,15 @@ function getExtScript(scripTag){
 
     let html = fs.readFileSync(path.resolve(DESTINATION, "index.html"), "utf8");
 
-    if (isMovable(extractScriptPath(scripTag))){
+    if (privateMethods.isMovable(privateMethods.extractScriptPath(scripTag))){
         //COPIE DU FICHIER DANS LE RÉPEROIRE DE DISTRIBUTION
-        fs.linkSync(path.resolve(SOURCE, extractScriptPath(scripTag)), path.resolve(DESTINATION, "JS/" + path.parse(extractScriptPath(scripTag)).base));
+        fs.linkSync(path.resolve(SOURCE, privateMethods.extractScriptPath(scripTag)), path.resolve(DESTINATION, "JS/" + path.parse(privateMethods.extractScriptPath(scripTag)).base));
 
         //MODIFICATION DU LIEN
-        scripTag = scripTag.replace(/src=["|'].*?["|']/, "src='JS/" + path.parse(extractScriptPath(scripTag)).base + "'");
+        scripTag = scripTag.replace(/src=["|'].*?["|']/, "src='JS/" + path.parse(privateMethods.extractScriptPath(scripTag)).base + "'");
 
         //AJOUT DE LA BALISE EN FIN DE BODY
-        insertScript("JS/" + path.parse(extractScriptPath(scripTag)).base);
+        insertScript("JS/" + path.parse(privateMethods.extractScriptPath(scripTag)).base);
     }
     else{
         //AJOUT DE LA BALISE TELLE QU'ELLE EST
@@ -389,47 +395,6 @@ function getExtScript(scripTag){
             throw "balise body introuvable.";
         }
     }
-}
-
-/**
- * RETURN TRUE SI LE CHEMIN N'EST PAS UN LIEN VERS LE WEB
- * @param {string} src - chemin relatif ou absolue
- * @returns {boolean}
- */
-function isMovable(src) {
-    return !!src && src.trim() !== "" && src.match(/^http|https|ftp|ftps/i) === null;
-}
-
-/**
- * RETOURNE LE CONTENU DE L'ATTRIBUT SRC D'UNE BALISE SCRIPT
- * @param {string} strTag - la balise sous forme de chaine de caractères
- * @returns {string}
- */
-function extractScriptPath(strTag){
-    const src = strTag.match(/src=["'].*["']/i);
-
-    if (!!src && strTag.indexOf("<script") === 0) {
-        return src[0]
-            .match(REGEXPSTRINGINSTRING)[0]
-            .replace(/["']/g, "");
-    }
-    return "";
-}
-
-/**
- * RETOURNE LE CONTENU DE L'ATTRIBUT HREF D'UNE BALISE LINK
- * @param {string} strTag - la balise sous forme de chaine de caractères
- * @returns {string}
- */
-function extractStylePath (strTag) {
-    const href = strTag.match(/href=["'].*["']/i);
-
-    if (!!href && strTag.indexOf("<link") === 0 && strTag.match(/rel=["']stylesheet["']/i) !== null) {
-        return href[0]
-            .match(REGEXPSTRINGINSTRING)[0]
-            .replace(/["']/g, "");
-    }
-    return "";
 }
 
 /**
@@ -490,34 +455,6 @@ function deleteCommentTag(thisStr, tagName) {
     });
 
     return thisStr;
-}
-
-/**
- * RETOURNE LA LISTE LES PROPRIÉTÉS AUTRES QUE SRC, HREF ET REL DE LA BALISE PASSÉE EN PARAMÈTRE
- * @param {string} tag
- * @returns {Object} liste les propriétés autres que src, href et rel
- */
-function getOtherProps(tag) {
-    //REMPLACEMENT DE TOUS LES SAUTS DE LIGNE POUR MIEUX TRAITER LA CHAINE DE CARACTÈRES AVEC LES REGEXP
-    tag = tag.replace(/\n/g, " ");
-
-    const regexProps = /\w+-*\w+=["'].+['"]/g;
-    const result = tag.match(regexProps);
-    let ret = {};
-
-    if (result !== null){
-        result.forEach(function (v) {
-        v.split(/["']\s+/g).forEach(function (val) {
-                const l_prop = val.split("=");
-
-                if (["rel", "src", "href"].indexOf(l_prop[0].trim()) === -1){
-                    ret[l_prop[0].trim()] = l_prop[1].replace(/^["']/, "").replace(/["']$/, "").trim();
-                }
-            })
-        })
-    }
-
-    return ret;
 }
 
 /**
@@ -647,7 +584,6 @@ function concatiFicationCSS(arr, suffix) {
     //CALCULE DE LA TAILLE DU TABLEAU, DÉCRÉMENTER À CHAQUE ITÉRATION ET QUAND ON ARRIVE À 0, ON SUPPRIME LE RÉPERTOIRE TEMPORAIRE CORRESPONDANT (TempCSS OU TempCSS-lastoc) UNIQUEMENT SI IL A ÉTÉ CRÉÉ
     let cptArr = arr.length;
 
-
     arr.forEach(function (val, ind) {
         const CSSfileName = `${new Date().getTime().toString()}-${ind+1}${suffix !== undefined ? `-${suffix.toString()}` : ""}-dist.css`;
 
@@ -712,13 +648,20 @@ function concatiFicationCSS(arr, suffix) {
  * @returns {Boolean} true si le répertoire a été supprimé sinon false
  */
 function deleteTemp(len, dir) {
-    if (len === 0){
-        // console.log(`suppression du répertoire temporaire ${dir}`);
+    if (len === 0)
         return deleteFuckingFolder(dir);
-    }
     return false;
 }
 
+/**
+ * VÉRIFIE QUE LES DOSSIERS NE SE CONTIENNENT PAS L'UN L'AUTRE
+ * @param {string} path1
+ * @param {string} path2
+ * returns {Boolean}
+ */
+function isIn(path1, path2) {
+    return pathIsInside(path1, path2) || pathIsInside(path2, path1);
+}
 
 module.exports.deleteFuckingFolder = deleteFuckingFolder;
 module.exports.createIndexHTMLFile = createIndexHTMLFile;
@@ -733,9 +676,4 @@ module.exports.getExtScript = getExtScript;
 module.exports.groupFiles = groupFiles;
 module.exports.concatiFicationJS = concatiFicationJS;
 module.exports.concatiFicationCSS = concatiFicationCSS;
-
-//POUR LES TESTS
-module.exports.isMovable = isMovable;
-module.exports.extractScriptPath = extractScriptPath;
-module.exports.extractStylePath = extractStylePath;
-module.exports.getOtherProps = getOtherProps;
+module.exports.isIn = isIn;

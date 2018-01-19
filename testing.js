@@ -3,7 +3,11 @@
  */
 "use strict";
 const assert = require('assert');
-const fctPerso = require('./fctPerso.js');
+const fctPerso = require('./privateMethods');
+const fonctionSystem = require('./fonctionSystem');
+const service = require('./service').config;
+const fs = require("fs");
+const path = require("path");
 
 describe('fctPerso', function() {
     describe('isMovable: retourne true si l\'url est un chemin local relatif ou absolu sinon false', function() {
@@ -125,4 +129,168 @@ describe('fctPerso', function() {
             JSON.stringify(fctPerso.getOtherProps("<style data-autre='blabla inutile'>.rainbow{background-color: yellow;}</style>")))
         });
     })
+
+});
+
+describe("fonctionSystem", function () {
+    describe("setSRC: initalise le dossier source et le retourne", function () {
+        it("./src", function () {
+            assert.equal("./src", fonctionSystem.setSRC("./src"));
+        });
+
+        it(".", function () {
+            assert.equal(".", fonctionSystem.setSRC("."));
+        });
+
+        it("./src  ", function () {
+            assert.equal("./src", fonctionSystem.setSRC("./src  "));
+        });
+
+        it("  ./src  ", function () {
+            assert.equal("./src", fonctionSystem.setSRC("  ./src  "));
+        });
+
+        it("chaîne vide", function () {
+            assert.equal("", fonctionSystem.setSRC(""));
+        });
+
+        it("3 espaces", function () {
+            assert.equal("", fonctionSystem.setSRC("   "));
+        });
+
+        it("null", function () {
+            assert.equal(null, fonctionSystem.setSRC(null));
+        });
+    });
+
+    describe("setDIST: initalise le dossier de destination et le retourne", function () {
+        it("./dist", function () {
+            assert.equal("./dist", fonctionSystem.setDIST("./dist"));
+        });
+
+        it(".", function () {
+            assert.equal(".", fonctionSystem.setDIST("."));
+        });
+
+        it("./dist  ", function () {
+            assert.equal("./dist", fonctionSystem.setDIST("./dist  "));
+        });
+
+        it("  ./dist  ", function () {
+            assert.equal("./dist", fonctionSystem.setDIST("  ./dist  "));
+        });
+
+        it("chaîne vide", function () {
+            assert.equal("", fonctionSystem.setDIST(""));
+        });
+
+        it("3 espaces", function () {
+            assert.equal("", fonctionSystem.setDIST("   "));
+        });
+
+        it("null", function () {
+            assert.equal(null, fonctionSystem.setDIST(null));
+        });
+    });
+
+    describe("getSRC: retourne le dossier source", function () {
+        it("./src", function () {
+            fonctionSystem.setSRC("./src");
+            assert.equal("./src", fonctionSystem.getSRC());
+        });
+
+        it(".", function () {
+            fonctionSystem.setSRC(".");
+            assert.equal(".", fonctionSystem.getSRC());
+        });
+
+        it("./src  ", function () {
+            fonctionSystem.setSRC("./src  ");
+            assert.equal("./src", fonctionSystem.getSRC());
+        });
+
+        it("  ./src  ", function () {
+            fonctionSystem.setSRC("  ./src  ");
+            assert.equal("./src", fonctionSystem.getSRC());
+        });
+
+        it("chaîne vide", function () {
+            fonctionSystem.setSRC("");
+            assert.equal("", fonctionSystem.getSRC());
+        });
+
+        it("3 espaces", function () {
+            fonctionSystem.setSRC("   ");
+            assert.equal("", fonctionSystem.getSRC());
+        });
+
+        it("null", function () {
+            fonctionSystem.setSRC(null);
+            assert.equal(null, fonctionSystem.getSRC());
+        });
+    });
+
+    describe("getDIST: retourne le dossier de destination", function () {
+        it("./dist", function () {
+            fonctionSystem.setDIST("./dist");
+            assert.equal("./dist", fonctionSystem.getDIST());
+        });
+
+        it(".", function () {
+            fonctionSystem.setDIST(".");
+            assert.equal(".", fonctionSystem.getDIST());
+        });
+
+        it("./dist  ", function () {
+            fonctionSystem.setDIST("./dist  ");
+            assert.equal("./dist", fonctionSystem.getDIST());
+        });
+
+        it("  ./dist  ", function () {
+            fonctionSystem.setDIST("  ./dist  ");
+            assert.equal("./dist", fonctionSystem.getDIST());
+        });
+
+        it("chaîne vide", function () {
+            fonctionSystem.setDIST("");
+            assert.equal("", fonctionSystem.getDIST());
+        });
+
+        it("3 espaces", function () {
+            fonctionSystem.setDIST("   ");
+            assert.equal("", fonctionSystem.getDIST());
+        });
+
+        it("null", function () {
+            fonctionSystem.setDIST(null);
+            assert.equal(null, fonctionSystem.getDIST());
+        });
+    });
+
+    describe("_createConfigFile: retourne la valeur json du fichier de configuration", function () {
+        it("lecture/création", function () {
+            fonctionSystem._createConfigFile();
+            assert.equal(true, fs.existsSync(path.resolve(".", "config-concatifieur.json")));
+        });
+
+        // fs.unlinkSync(path.resolve(".", "config-concatifieur.json"));
+    });
+
+    describe("_readConfig", function () {
+        it("lecture par défaut", function () {
+            assert.equal(JSON.stringify({"source":"./src","destination":"./dist"}), JSON.stringify(fonctionSystem._readConfig()));
+        });
+
+        it("lecture avec paramètres", function () {
+            fonctionSystem._setConfig({source: "youhou", destination: "perdu"});
+            assert.equal(JSON.stringify({"source":"youhou","destination":"perdu"}), JSON.stringify(fonctionSystem._readConfig()));
+        });
+
+        it("lecture sans paramètre: enregistrement des valeurs du service", function () {
+            service.source = "ici";
+            service.destination = "là-bas";
+            fonctionSystem._setConfig();
+            assert.equal(JSON.stringify({"source":"ici","destination":"là-bas"}), JSON.stringify(fonctionSystem._readConfig()));
+        });
+    });
 });
