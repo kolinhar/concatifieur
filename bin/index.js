@@ -16,9 +16,6 @@ console.log("affectation", service);*/
 // console.log("args:", args);
 
 
-//@TODO: AVANT TOUT ON VÉRIFIE LA CONFIGURATION
-
-
 const regSrc = /^--src=/g;
 const regDest = /^--dest=/g;
 
@@ -26,8 +23,11 @@ const regDest = /^--dest=/g;
 const verboseMODE = args.indexOf("--verbose") !== -1;
 const versionMODE = args.indexOf("-v") !== -1 || args.indexOf("--version") !== -1;
 const helpMODE = args.indexOf("-h") !== -1 || args.indexOf("--help") !== -1;
-const min = args.indexOf("min") !== -1 || args.length <= 2 || (args.length === 3 && verboseMODE);
+const min = args.indexOf("min") !== -1 || (args.length === 3 && verboseMODE);
 const posConfig = args.indexOf("config");
+const posIgnore = posConfig && args.indexOf("ignore");
+const posRemove = posConfig && args.indexOf("disignore");
+const noArgs = args.length === 2;
 
 let src = "";
 let dest = "";
@@ -60,9 +60,8 @@ if (posConfig !== -1){
     let isSrc = tempSrc && fs.existsSync(tempSrc);
     let isDest = tempDest && fs.existsSync(tempDest);
 
-
+    //VÉRIFIER QUE LES RÉPERTOIRES NE SE CONTIENNENT PAS L'UN L'AUTRE
     if (isSrc && isDest){
-        //VÉRIFIER QUE LES RÉPERTOIRES NE SE CONTIENNENT PAS L'UN L'AUTRE
         if(fctPerso.isIn(tempSrc, tempDest)){
             console.error("Les répertoires source et destination sont contenus l'un dans l'autre.");
             return;
@@ -74,13 +73,21 @@ if (posConfig !== -1){
         verboseMODE && console.log("source:", src);
 
         if (fs.statSync(src).isDirectory()){
+            const destConfig = fctSystem.getDIST();
+
+            //SI LA DESTINATION EXISTE DANS LA CONFIG ET N'EST PAS EN PARAMÈTRE, LA COMPARER AVEC LA SOURCE
+            if (destConfig && !isDest){
+                if(fctPerso.isIn(src, destConfig)){
+                    console.error("Les répertoires source et destination sont contenus l'un dans l'autre.");
+                    return;
+                }
+            }
+
             //CONFIGURER LA SOURCE
             fctSystem.setSRC(src)
+        } else {
+            console.log("Le répertoire source n'est pas un dossier.");
         }
-        else{
-            console.log("pas bien");
-        }
-
     } else {
         if (tempSrc) {
             console.error(`le répertoire source '${tempSrc}' n'existe pas`);
@@ -91,29 +98,39 @@ if (posConfig !== -1){
         dest = path.resolve(tempDest);
         verboseMODE && console.log("destination:", dest);
 
-        //CONFIGURER LA DESTINATION
-        fctSystem.setDIST(dest);
+        if (fs.statSync(dest).isDirectory()){
+            const srcConfig = fctSystem.getSRC();
+
+            //SI LA SOURCE EXISTE DANS LA CONFIG ET N'EST PAS EN PARAMÈTRE, LA COMPARER AVEC LA DESTINATION
+            if (srcConfig && !isSrc){
+                if(fctPerso.isIn(dest, srcConfig)){
+                    console.error("Les répertoires source et destination sont contenus l'un dans l'autre.");
+                    return;
+                }
+            }
+
+            //CONFIGURER LA DESTINATION
+            fctSystem.setDIST(dest);
+        } else {
+            console.log("Le répertoire destination n'est pas un dossier.");
+        }
     } else {
         if (tempDest) {
             console.error(`le répertoire de destination '${tempDest}' n'existe pas`);
         }
     }
-/*    console.log(fs.existsSync("."));
-    console.log(path.resolve("."));
 
-    console.log(fs.existsSync("./src"));
-    console.log(path.resolve("./src"));
+    if (posIgnore !== -1 && args[posIgnore + 1]){
+        fctSystem.addFolder(args[posIgnore + 1]);
+    }
 
-    console.log(fs.existsSync("C:/Users/PRJS12821/Documents/Projets Node/config-GULP/src"));
-    console.log(path.resolve("C:/Users/PRJS12821/Documents/Projets Node/config-GULP/src"));
+    if (posRemove !== -1 && args[posRemove + 1]){
+        fctSystem.removeFolder(args[posRemove + 1]);
+    }
 
-    console.log(fs.existsSync("dist"));
-    console.log(fs.existsSync("/dist"));
-    console.log(fs.existsSync("./dist"));
-    console.log(fs.existsSync("./dist2"));
-
-    console.log(fs.existsSync("../config-GULP"));
-    console.log(path.resolve("../config-GULP"));*/
+    if (verboseMODE){
+        console.log("Configuration:\n", fctSystem._readConfig());
+    }
 }
 
 //cmd concatifieur [min] [--verbose] [source] [destination]
@@ -130,26 +147,30 @@ if (init){
     return;
 }
 
+//cmd concatifieur -v/--version
+if (versionMODE || noArgs){
+    console.log("v" + fctSystem.getVersion());
+}
+
 //cmd concatifieur -h/--help
-if (helpMODE){
+if (helpMODE || noArgs){
     console.log(`Usage: concatifieur ${"<commande>"} [argument]
        concatifieur min [arguments]
 
 Commandes:
  init                     initialise le répertoire en cours en créant un fichier index.html avec les balises nécessaires
  min                      concatène et minifie les fichiers JS et CSS dans le répertoire de destination et les inclus dans un fichier index.html
- config                   création/mise à jour du fichier de configuration avec les arguments --src=--src=${"<source>"} et --dist=${"<destiantion>"}
+ config                   création/mise à jour du fichier de configuration avec les arguments --src=-${"<source>"} et --dist=${"<destination>"}
 
 Arguments:
  -h, --help               affiche cette aide
  --verbose                exécute la commande en mode verbeux
  -v, --version            affiche la version en cours du concatifieur
  --src=${"<source>"}           défini l'emplacement du répertoire contenant les fichiers source
- --dest=${"<destiantion>"}     défini l'emplacement du répertoire de destination des fichiers concatifiés
+ --dest=${"<destination>"}     défini l'emplacement du répertoire de destination des fichiers concatifiés
  `);
 }
 
-//cmd concatifieur -v/--version
-if (versionMODE){
-    console.log("v" + fctSystem.getVersion());
+if (noArgs){
+    fctSystem.checkConfig();
 }

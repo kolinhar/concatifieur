@@ -3,6 +3,7 @@
  */
 "use strict";
 module.exports.config = {
-    source: null,
-    destination: null
+    source: "",
+    destination: "",
+    ignoredFolders: []
 };

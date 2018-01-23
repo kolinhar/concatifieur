@@ -264,7 +264,7 @@ function duplicateFolder(origPath, destPath) {
  * @returns {boolean}
  */
 function isDuplicableFolder(folderPath){
-    return !fs.existsSync(path.resolve(folderPath, ".ignore"));
+    return !fs.existsSync(path.resolve(folderPath, IGNORENAME));
 }
 
 /**
