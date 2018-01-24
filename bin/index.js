@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const fctSystem = require("../fonctionSystem");
 const fctPerso = require("../fctPerso");
+const config = require("../service");
 
 // console.log("on est là:", path.resolve(".", args[2] && args[2].toString() || ""));
 
@@ -24,14 +25,11 @@ const verboseMODE = args.indexOf("--verbose") !== -1;
 const versionMODE = args.indexOf("-v") !== -1 || args.indexOf("--version") !== -1;
 const helpMODE = args.indexOf("-h") !== -1 || args.indexOf("--help") !== -1;
 const min = args.indexOf("min") !== -1 || (args.length === 3 && verboseMODE);
+const posMin = args.indexOf("min");
 const posConfig = args.indexOf("config");
 const posIgnore = posConfig && args.indexOf("ignore");
 const posRemove = posConfig && args.indexOf("disignore");
 const noArgs = args.length === 2;
-
-let src = "";
-let dest = "";
-
 const init = args.indexOf("init") !== -1;
 
 //cmd concatifieur [(...)] --verbose
@@ -44,8 +42,12 @@ if (verboseMODE){
 if (posConfig !== -1){
     const resSrc = args.filter(x => regSrc.test(x));
     const resDest = args.filter(x => regDest.test(x));
+
     let tempSrc = "";
     let tempDest = "";
+
+    let src = "";
+    let dest = "";
 
     //--src=source
     if (resSrc.length > 0){
@@ -84,7 +86,7 @@ if (posConfig !== -1){
             }
 
             //CONFIGURER LA SOURCE
-            fctSystem.setSRC(src)
+            config.source = fctSystem.setSRC(src);
         } else {
             console.log("Le répertoire source n'est pas un dossier.");
         }
@@ -110,7 +112,7 @@ if (posConfig !== -1){
             }
 
             //CONFIGURER LA DESTINATION
-            fctSystem.setDIST(dest);
+            config.destination = fctSystem.setDIST(dest);
         } else {
             console.log("Le répertoire destination n'est pas un dossier.");
         }
@@ -121,11 +123,13 @@ if (posConfig !== -1){
     }
 
     if (posIgnore !== -1 && args[posIgnore + 1]){
-        fctSystem.addFolder(args[posIgnore + 1]);
+        config.ignoredFolders = fctSystem.addFolder(args[posIgnore + 1]);
+        verboseMODE && console.log("Ajout de:", args[posIgnore + 1]);
     }
 
     if (posRemove !== -1 && args[posRemove + 1]){
-        fctSystem.removeFolder(args[posRemove + 1]);
+        config.ignoredFolders = fctSystem.removeFolder(args[posRemove + 1]);
+        verboseMODE && console.log("Suppression de:", args[posIgnore + 1]);
     }
 
     if (verboseMODE){
@@ -135,10 +139,33 @@ if (posConfig !== -1){
 
 //cmd concatifieur [min] [--verbose] [source] [destination]
 if (min){
-    if (fctSystem.checkConfig()){
-        concatifieur.min(verboseMODE, src, dest);
-        return;
+    let src = "";
+    let dest = "";
+
+    //SI LA SOURCE ET LA DESTINATION SONT PASSÉES EN PARAMÈTRE
+    if (args[posMin + 1] && args[posMin + 2]) {
+        src = path.resolve(args[posMin + 1]);
+        dest = path.resolve(args[posMin + 2]);
+
+        if (!fctSystem.checkConfig({ source: src, destination: dest})){
+            return;
+        }
+    } else {
+        //SI IL N'Y A QU'UN OU AUCUN PARAMÈTRE
+        //ON UTILISE LES PARAMÈTRES DE LA CONFIG
+        src = fctSystem.getSRC();
+        dest = fctSystem.getDIST();
+
+        if (!fctSystem.checkConfig()){
+            return;
+        }
     }
+
+    config.source = src;
+    config.destination = dest;
+
+    concatifieur.min(verboseMODE);
+    return;
 }
 
 //cmd concatifieur init [--verbose]
@@ -155,19 +182,31 @@ if (versionMODE || noArgs){
 //cmd concatifieur -h/--help
 if (helpMODE || noArgs){
     console.log(`Usage: concatifieur ${"<commande>"} [argument]
-       concatifieur min [arguments]
+       concatifieur
+       concatifieur init
+       concatifieur min
+       concatifieur min ./src ./dist
+       concatifieur min config --src=./src --dest=./dist
+       concatifieur min config ignore ./src/srcipt/controllers/upload
+       concatifieur min config disignore ./src/srcipt/controllers/upload
+       
 
 Commandes:
- init                     initialise le répertoire en cours en créant un fichier index.html avec les balises nécessaires
- min                      concatène et minifie les fichiers JS et CSS dans le répertoire de destination et les inclus dans un fichier index.html
- config                   création/mise à jour du fichier de configuration avec les arguments --src=-${"<source>"} et --dist=${"<destination>"}
+ init             initialise le répertoire en cours en créant un fichier index.html avec les balises nécessaires au fonctionnement de cet outil
+ 
+ min              concatène et minifie les fichiers JS et CSS dans le répertoire de destination et les inclus dans un fichier index.html
+                    ${"<source>"} ${"<destination>"} défini les emplacements des répertoire contenant les fichiers source et de destination
+                            
+ config           création/mise à jour du fichier de configuration
+                    --src=${"<source>"} défini l'emplacement du répertoire contenant les fichiers source
+                    --dest=${"<destination>"} défini l'emplacement du répertoire de destination des fichiers concatifiés
+                    ignore ${"<dossier>"} ajoute un répertoire à ignorer 
+                    disignore ${"<dossier>"} retire un répertoire à ignorer
 
 Arguments:
- -h, --help               affiche cette aide
- --verbose                exécute la commande en mode verbeux
- -v, --version            affiche la version en cours du concatifieur
- --src=${"<source>"}           défini l'emplacement du répertoire contenant les fichiers source
- --dest=${"<destination>"}     défini l'emplacement du répertoire de destination des fichiers concatifiés
+ -h, --help       affiche cette aide
+ --verbose        exécute la commande en mode verbeux
+ -v, --version    affiche la version en cours du concatifieur
  `);
 }
 

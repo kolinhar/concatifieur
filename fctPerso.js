@@ -12,6 +12,7 @@ const service = require("./service").config;
 const privateMethods = require("./privateMethods");
 const pathIsInside = require("path-is-inside");
 
+//@TODO: DONNER LA POSSIBILITÉ DE PASSER EN PARAMÈTRE (OU VIA LE SERVICE) LA SOURCE ET LA DESTINATION
 // DOSSIER DE TRAVAIL
 const SOURCE = service.source;
 // DOSSIER À LIVRER
@@ -62,7 +63,6 @@ function deleteFuckingFolder (folder) {
  * @param {string} [pathDest] - le répertoire de destination
  */
 function createIndexHTMLFile (indexOrig, pathDest){
-    //@TODO: GÉRER LA CONFIG DES RÉPERTOIRE SOURCE ET DE DESTINATION
     indexOrig = indexOrig || path.resolve(SOURCE, "index.html");
     pathDest = pathDest || DESTINATION;
 

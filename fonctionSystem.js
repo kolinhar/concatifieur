@@ -23,12 +23,15 @@ function _getVersion() {
 /**
  * AJOUTE DANS LA CONFIGURATION LE RÉPERTOIRE SOURCE
  * @param {string} src
+ * @returns {string}
  * @private
  */
 function _setSRC(src) {
     _setConfig({
-        source: src.toString()
+        source: src
     });
+
+    return src;
 }
 
 /**
@@ -43,12 +46,15 @@ function _getSRC() {
 /**
  * AJOUTE DANS LA CONFIGURATION LE RÉPERTOIRE DE DESTIANTION
  * @param {string} dist
+ * @returns {string}
  * @private
  */
 function _setDIST(dist) {
     _setConfig({
-        destination: dist.toString()
+        destination: dist
     });
+
+    return dist;
 }
 
 /**
@@ -62,7 +68,8 @@ function _getDIST() {
 
 /**
  * AJOUTE DANS LA CONFIGURATION UN RÉPERTOIRE À IGNORER
- * @param chemin
+ * @param {string} chemin
+ * @returns {array}
  * @private
  */
 function _addFolder(chemin) {
@@ -89,11 +96,14 @@ function _addFolder(chemin) {
     }
 
     _setConfig(configFile);
+
+    return configFile.ignoredFolders;
 }
 
 /**
  * SUPPRIME DANS LA CONFIGURATION UN RÉPERTOIRE À IGNORER
  * @param chemin
+ * @returns {array}
  * @private
  */
 function _removeFolder(chemin) {
@@ -110,6 +120,8 @@ function _removeFolder(chemin) {
         .filter(x => x !== tempPath);
 
     _setConfig(configFile);
+
+    return configFile.ignoredFolders;
 }
 
 /**

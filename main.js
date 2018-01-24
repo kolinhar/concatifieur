@@ -1,7 +1,5 @@
 const fctPerso = require('./fctPerso.js');
-const service = require("./service").config;
-const source = service.source; // dossier de travail
-const destination = service.destination; // dossier à livrer
+const config = require("./service").config;
 
 const REGEXPINNERCONCATTAG = /<!--CONCATIFICATION-->(.|\r|\n)*?<!--\/CONCATIFICATION-->/g;
 const REGEXPINNERLASTOCTAG = /<!--LASTOC-->(\r|\n|.)*?<!--\/LASTOC-->/g;
@@ -10,14 +8,15 @@ function _init() {
     fctPerso.generateIndexHTMLFile();
 }
 
+//@TODO: DONNER LA POSSIBILITÉ DE PASSER EN PARAMÈTRE (OU VIA LE SERVICE) LA SOURCE ET LA DESTINATION
 function _min(verbose) {
-    fctPerso.deleteFuckingFolder(destination);
+    fctPerso.deleteFuckingFolder(config.destination);
     verbose && console.log("Concaténation et minification des fichiers JS et CSS");
 
     fctPerso.createIndexHTMLFile();
     verbose && console.log("création du fichier index.html.");
     //MISE EN 'PROD'
-    fctPerso.duplicateFolder(source, destination);
+    fctPerso.duplicateFolder(config.source, config.destination);
     verbose && console.log("copie des fichiers terminée");
 
     const TagsList = fctPerso.innerTag(REGEXPINNERCONCATTAG);
