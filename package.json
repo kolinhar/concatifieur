@@ -1,0 +1,38 @@
+{
+  "name": "concatifieur",
+  "version": "1.1.0",
+  "description": "concaténation et minification de fichers JS et CSS",
+  "bin": {
+    "concatifieur": "./bin/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/sncf-asti18/misc/gulp-minifier.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.com/sncf-asti18/misc/gulp-minifier/issues"
+  },
+  "scripts": {
+    "start": "gulp min",
+    "test": "mocha -c testing.js",
+    "dev": "gulp concatification"
+  },
+  "author": "RemyJuanes",
+  "license": "WTFPL",
+  "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-minify": "^0.2.0",
+    "babel-preset-es2015": "^6.24.1",
+    "clean-css": "^4.1.9",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.9.2",
+    "gulp-concat": "^2.6.1",
+    "path-is-inside": "^1.0.2",
+    "pump": "^1.0.3"
+  },
+  "devDependencies": {
+    "angular": "^1.5.8",
+    "bootstrap": "^3.3.7",
+    "mocha": "^4.1.0"
+  }
+}

@@ -1,0 +1,5 @@
+.idea/
+src/
+dist/
+node_modules/
+Temp*/
