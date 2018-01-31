@@ -1,14 +1,11 @@
 const fctPerso = require('./fctPerso.js');
 const config = require("./service").config;
-
-const REGEXPINNERCONCATTAG = /<!--CONCATIFICATION-->(.|\r|\n)*?<!--\/CONCATIFICATION-->/g;
-const REGEXPINNERLASTOCTAG = /<!--LASTOC-->(\r|\n|.)*?<!--\/LASTOC-->/g;
+const values = require("./values");
 
 function _init() {
     fctPerso.generateIndexHTMLFile();
 }
 
-//@TODO: DONNER LA POSSIBILITÉ DE PASSER EN PARAMÈTRE (OU VIA LE SERVICE) LA SOURCE ET LA DESTINATION
 function _min(verbose) {
     fctPerso.deleteFuckingFolder(config.destination);
     verbose && console.log("Concaténation et minification des fichiers JS et CSS");
@@ -19,13 +16,13 @@ function _min(verbose) {
     fctPerso.duplicateFolder(config.source, config.destination);
     verbose && console.log("copie des fichiers terminée");
 
-    const TagsList = fctPerso.innerTag(REGEXPINNERCONCATTAG);
+    const TagsList = fctPerso.innerTag(values.REGEXPINNERCONCATTAG);
     verbose && console.log("liste des balises");
 
     verbose && console.log(TagsList.scriptsTab.length, `fichier${(TagsList.scriptsTab.length > 1 ? 's': '')} de JS à traiter`);
     verbose && console.log(TagsList.stylesTab.length, `fichier${(TagsList.stylesTab.length > 1 ? 's': '')} de CSS à traiter`);
 
-    const LastTagslist = fctPerso.innerTag(REGEXPINNERLASTOCTAG);
+    const LastTagslist = fctPerso.innerTag(values.REGEXPINNERLASTOCTAG);
 
     verbose && console.log(LastTagslist.scriptsTab.length, `fichier${(LastTagslist.scriptsTab.length > 1 ? 's': '')} de JS à traiter en dernier`);
     verbose && console.log(LastTagslist.stylesTab.length, `fichier${(LastTagslist.stylesTab.length > 1 ? 's': '')} de CSS à traiter en dernier`);

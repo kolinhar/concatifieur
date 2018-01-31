@@ -11,12 +11,7 @@ const babel_core = require("babel-core");
 const service = require("./service").config;
 const privateMethods = require("./privateMethods");
 const pathIsInside = require("path-is-inside");
-
-//@TODO: DONNER LA POSSIBILITÉ DE PASSER EN PARAMÈTRE (OU VIA LE SERVICE) LA SOURCE ET LA DESTINATION
-// DOSSIER DE TRAVAIL
-const SOURCE = service.source;
-// DOSSIER À LIVRER
-const DESTINATION = service.destination;
+const config = require("./service").config;
 
 const IGNORENAME = ".ignore";
 const REGEXPSPACEBETWEENTAGS = />\s+</gm;
@@ -35,6 +30,13 @@ const INDEXFILENAME = "index.html";
  * @returns {Boolean} - true si le répertoire a été supprimé, false si il n'existe pas
  */
 function deleteFuckingFolder (folder) {
+    //SI LE PARAMÈTRE folder EST VIDE, LA FONCTION CHERCHE À SUPPRIMER TOUT JUSQU'À LA RACINE DU DISQUE
+    if (folder.trim() === "")
+        throw {
+            message: "Une chaine vide en paramètre supprime tout ...",
+            name: "Empty String Exception"
+        };
+
     folder = path.resolve(folder);
 
     if( fs.existsSync(folder) ) {
@@ -63,8 +65,8 @@ function deleteFuckingFolder (folder) {
  * @param {string} [pathDest] - le répertoire de destination
  */
 function createIndexHTMLFile (indexOrig, pathDest){
-    indexOrig = indexOrig || path.resolve(SOURCE, "index.html");
-    pathDest = pathDest || DESTINATION;
+    indexOrig = indexOrig || path.resolve(config.source, "index.html");
+    pathDest = pathDest || config.destination;
 
     if(!fs.existsSync(pathDest))
         fs.mkdirSync(pathDest);
@@ -97,14 +99,14 @@ function createIndexHTMLFile (indexOrig, pathDest){
  */
 function generateIndexHTMLFile(verboseMode) {
 
-    if (fs.existsSync(path.resolve(SOURCE, "index.html"))){
-        verboseMode && console.warn(`Le fichier 'index.html' existe déjà dans le dossier ${SOURCE}`);
+    if (fs.existsSync(path.resolve(config.source, "index.html"))){
+        verboseMode && console.warn(`Le fichier 'index.html' existe déjà dans le dossier ${config.source}`);
     }
     else{
-        if (!fs.existsSync(path.resolve(SOURCE)))
-            fs.mkdirSync(path.resolve(SOURCE));
+        if (!fs.existsSync(path.resolve(config.source)))
+            fs.mkdirSync(path.resolve(config.source));
 
-        fs.writeFileSync(path.resolve(SOURCE, "index.html"),
+        fs.writeFileSync(path.resolve(config.source, "index.html"),
 `<!DOCTYPE html> 
 <html lang='fr'>
     <head>
@@ -120,7 +122,7 @@ function generateIndexHTMLFile(verboseMode) {
     </body>
 </html>`, "utf8");
 
-        verboseMode && console.log(`Fichier 'index.html' créé dans le dossier ${SOURCE}`);
+        verboseMode && console.log(`Fichier 'index.html' créé dans le dossier ${config.source}`);
     }
 }
 
@@ -131,7 +133,7 @@ function generateIndexHTMLFile(verboseMode) {
  * @param {string} [filePath] chemin du fichier index.html
  */
 function insertStyle (styleObj, dest, filePath) {
-    filePath = filePath || path.resolve(DESTINATION, "index.html");
+    filePath = filePath || path.resolve(config.destination, "index.html");
     const tagInsert = dest === "body" ? "body" : "head";
 
     let html = fs.readFileSync(filePath, "utf8");
@@ -172,7 +174,7 @@ function insertStyle (styleObj, dest, filePath) {
  * @param {string} [filePath] chemin du fichier index.html
  */
 function insertScript(scriptObj, dest, filePath){
-    filePath = filePath || path.resolve(DESTINATION, "index.html");
+    filePath = filePath || path.resolve(config.destination, "index.html");
     const tagInsert = dest === "body" ? "body" : "head";
 
     let html = fs.readFileSync(filePath, "utf8");
@@ -274,7 +276,7 @@ function isDuplicableFolder(folderPath){
  * @returns {Object} Objet contenant 2 tableaux 1 pour les scripts et 1 pour les styles
  */
 function innerTag(regex, filePath){
-    filePath = path.resolve(filePath || path.resolve(SOURCE, "index.html"));
+    filePath = path.resolve(filePath || path.resolve(config.source, "index.html"));
     let ret = {};
     const html = fs.readFileSync(filePath, "utf8");
 
@@ -292,7 +294,7 @@ function innerTag(regex, filePath){
 
             if (l_scripts !== null){
                 l_scripts.forEach(function (v, i) {
-                    let l_path = extractScriptPath(v) || null,
+                    let l_path = privateMethods.extractScriptPath(v) || null,
                         l_content = v.match(REGEXSCRIPTINLINE);
 
                     /**
@@ -365,11 +367,11 @@ function getExtScript(scripTag){
     if (scripTag.indexOf("<link") === 0)
         return;
 
-    let html = fs.readFileSync(path.resolve(DESTINATION, "index.html"), "utf8");
+    let html = fs.readFileSync(path.resolve(config.destination, "index.html"), "utf8");
 
     if (privateMethods.isMovable(privateMethods.extractScriptPath(scripTag))){
         //COPIE DU FICHIER DANS LE RÉPEROIRE DE DISTRIBUTION
-        fs.linkSync(path.resolve(SOURCE, privateMethods.extractScriptPath(scripTag)), path.resolve(DESTINATION, "JS/" + path.parse(privateMethods.extractScriptPath(scripTag)).base));
+        fs.linkSync(path.resolve(config.source, privateMethods.extractScriptPath(scripTag)), path.resolve(config.destination, "JS/" + path.parse(privateMethods.extractScriptPath(scripTag)).base));
 
         //MODIFICATION DU LIEN
         scripTag = scripTag.replace(/src=["|'].*?["|']/, "src='JS/" + path.parse(privateMethods.extractScriptPath(scripTag)).base + "'");
@@ -389,7 +391,7 @@ function getExtScript(scripTag){
 
             html = html.replace("</body>", scripTag + "</body>");
 
-            fs.writeFileSync(path.resolve(DESTINATION, "index.html"), html, "utf8");
+            fs.writeFileSync(path.resolve(config.destination, "index.html"), html, "utf8");
         }
         else{
             throw "balise body introuvable.";
@@ -537,10 +539,10 @@ function concatiFicationJS(arr, suffix) {
 
                 pump([
                         gulp.src(val.map(function (v) {
-                            return path.resolve(SOURCE, v.chemin)
+                            return path.resolve(config.source, v.chemin)
                         })),
                         concat(JSfileName),
-                        gulp.dest(`${DESTINATION}${PATHSEPARATOR}JS`)
+                        gulp.dest(`${config.destination}${PATHSEPARATOR}JS`)
                     ],
                     function (err) {
                         if (err){
@@ -548,7 +550,7 @@ function concatiFicationJS(arr, suffix) {
                             return;
                         }
 
-                        babel_core.transformFile(`${DESTINATION}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, {
+                        babel_core.transformFile(`${config.destination}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, {
                             presets: ["es2015"],
                             compact: true,
                             comments: false,
@@ -559,7 +561,7 @@ function concatiFicationJS(arr, suffix) {
                                 return;
                             }
 
-                            fs.writeFileSync(`${DESTINATION}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, result.code);
+                            fs.writeFileSync(`${config.destination}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, result.code);
 
                             console.log(`fin de traitement du script ${JSfileName}`);
                             cptArr--;
@@ -616,13 +618,13 @@ function concatiFicationCSS(arr, suffix) {
 
                 pump([
                         gulp.src(val.map(function (v) {
-                            return path.resolve(SOURCE, v.chemin)
+                            return path.resolve(config.source, v.chemin)
                         })),
                         concat(CSSfileName),
                         gulp_clean_css({
                             keepSpecialComments: 0
                         }),
-                        gulp.dest(DESTINATION + "/CSS")
+                        gulp.dest(config.destination + "/CSS")
                     ],
                     function (err) {
                         if (err){
@@ -660,7 +662,7 @@ function deleteTemp(len, dir) {
  * returns {Boolean}
  */
 function isIn(path1, path2) {
-    return pathIsInside(path1, path2) || pathIsInside(path2, path1);
+    return path1 === path2 || pathIsInside(path1, path2) || pathIsInside(path2, path1);
 }
 
 module.exports.deleteFuckingFolder = deleteFuckingFolder;

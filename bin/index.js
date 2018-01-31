@@ -7,7 +7,8 @@ const path = require("path");
 const fs = require("fs");
 const fctSystem = require("../fonctionSystem");
 const fctPerso = require("../fctPerso");
-const config = require("../service");
+const config = require("../service").config;
+const values = require("../values");
 
 // console.log("on est là:", path.resolve(".", args[2] && args[2].toString() || ""));
 
@@ -34,8 +35,7 @@ const init = args.indexOf("init") !== -1;
 
 //cmd concatifieur [(...)] --verbose
 if (verboseMODE){
-    console.log("verbose mode:");
-    console.log(args);
+    console.log("verbose mode:\n", args, "\n");
 }
 
 //cmd concatifieur config [--src=source] [--dest=destiantion]
@@ -60,12 +60,12 @@ if (posConfig !== -1){
     }
 
     let isSrc = tempSrc && fs.existsSync(tempSrc);
-    let isDest = tempDest && fs.existsSync(tempDest);
+    let isDest = tempDest;
 
     //VÉRIFIER QUE LES RÉPERTOIRES NE SE CONTIENNENT PAS L'UN L'AUTRE
     if (isSrc && isDest){
         if(fctPerso.isIn(tempSrc, tempDest)){
-            console.error("Les répertoires source et destination sont contenus l'un dans l'autre.");
+            console.error(values.ERRORISINDIRECTORIES);
             return;
         }
     }
@@ -80,7 +80,7 @@ if (posConfig !== -1){
             //SI LA DESTINATION EXISTE DANS LA CONFIG ET N'EST PAS EN PARAMÈTRE, LA COMPARER AVEC LA SOURCE
             if (destConfig && !isDest){
                 if(fctPerso.isIn(src, destConfig)){
-                    console.error("Les répertoires source et destination sont contenus l'un dans l'autre.");
+                    console.error(values.ERRORISINDIRECTORIES);
                     return;
                 }
             }
@@ -100,26 +100,18 @@ if (posConfig !== -1){
         dest = path.resolve(tempDest);
         verboseMODE && console.log("destination:", dest);
 
-        if (fs.statSync(dest).isDirectory()){
-            const srcConfig = fctSystem.getSRC();
+        const srcConfig = fctSystem.getSRC();
 
-            //SI LA SOURCE EXISTE DANS LA CONFIG ET N'EST PAS EN PARAMÈTRE, LA COMPARER AVEC LA DESTINATION
-            if (srcConfig && !isSrc){
-                if(fctPerso.isIn(dest, srcConfig)){
-                    console.error("Les répertoires source et destination sont contenus l'un dans l'autre.");
-                    return;
-                }
+        //SI LA SOURCE EXISTE DANS LA CONFIG ET N'EST PAS EN PARAMÈTRE, LA COMPARER AVEC LA DESTINATION
+        if (srcConfig && !isSrc){
+            if(fctPerso.isIn(dest, srcConfig)){
+                console.error(values.ERRORISINDIRECTORIES);
+                return;
             }
+        }
 
-            //CONFIGURER LA DESTINATION
-            config.destination = fctSystem.setDIST(dest);
-        } else {
-            console.log("Le répertoire destination n'est pas un dossier.");
-        }
-    } else {
-        if (tempDest) {
-            console.error(`le répertoire de destination '${tempDest}' n'existe pas`);
-        }
+        //CONFIGURER LA DESTINATION
+        config.destination = fctSystem.setDIST(dest);
     }
 
     if (posIgnore !== -1 && args[posIgnore + 1]){
@@ -139,30 +131,25 @@ if (posConfig !== -1){
 
 //cmd concatifieur [min] [--verbose] [source] [destination]
 if (min){
-    let src = "";
-    let dest = "";
+    let src = fctSystem.getSRC();
+    let dest = fctSystem.getDIST();
 
-    //SI LA SOURCE ET LA DESTINATION SONT PASSÉES EN PARAMÈTRE
-    if (args[posMin + 1] && args[posMin + 2]) {
+    //SI LA SOURCE EST PASSÉE EN PARAMÈTRE
+    if (args[posMin + 1] && args[posMin + 1] !== "--verbose")
         src = path.resolve(args[posMin + 1]);
+
+    //SI LA DESTINATION EST PASSÉE EN PARAMÈTRE
+    if (args[posMin + 2] && args[posMin + 2] !== "--verbose")
         dest = path.resolve(args[posMin + 2]);
-
-        if (!fctSystem.checkConfig({ source: src, destination: dest})){
-            return;
-        }
-    } else {
-        //SI IL N'Y A QU'UN OU AUCUN PARAMÈTRE
-        //ON UTILISE LES PARAMÈTRES DE LA CONFIG
-        src = fctSystem.getSRC();
-        dest = fctSystem.getDIST();
-
-        if (!fctSystem.checkConfig()){
-            return;
-        }
-    }
 
     config.source = src;
     config.destination = dest;
+
+    if (!fctSystem.checkConfig({ source: src, destination: dest }))
+        return;
+
+    verboseMODE && console.log("répertoire source à traiter:", src);
+    verboseMODE && console.log("répertoire de destination:", dest, "\n");
 
     concatifieur.min(verboseMODE);
     return;

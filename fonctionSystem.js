@@ -7,6 +7,7 @@ const path = require("path");
 const filePathConfig = path.resolve(".", "config-concatifieur.json");
 const fctPerso = require("./fctPerso");
 const config = require("./service").config;
+const values = require("./values");
 
 
 /**
@@ -192,7 +193,7 @@ function _checkConfig(cfg) {
 
     if (resSrc && resDest){
         if(fctPerso.isIn(cfg.source, cfg.destination)){
-            console.log("Les répertoires source et destination sont contenus l'un dans l'autre.");
+            console.log(values.ERRORISINDIRECTORIES);
             err++;
         }
     }
@@ -213,15 +214,17 @@ function _checkDirectory(chemin, type) {
     if (!chemin) {
         console.log(`Veuillez configurer un répertoire ${type}.`);
         err++;
-    }
-    else {
-        if (!fs.existsSync(chemin)) {
-            console.log(`Le répertoire configuré pour la ${type} n'existe pas`);
-            err++;
-        } else {
-            if (!fs.statSync(chemin).isDirectory()) {
-                console.log(`Le répertoire configuré pour la ${type} n'est pas un répertoire.`);
+    } else {
+
+        if (type !== "destination") {
+            if (!fs.existsSync(chemin)) {
+                console.log(`Le répertoire configuré pour la ${type} n'existe pas`);
                 err++;
+            } else {
+                if (!fs.statSync(chemin).isDirectory()) {
+                    console.log(`Le répertoire configuré pour la ${type} n'est pas un répertoire.`);
+                    err++;
+                }
             }
         }
     }
