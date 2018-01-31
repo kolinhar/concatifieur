@@ -662,6 +662,9 @@ function deleteTemp(len, dir) {
  * returns {Boolean}
  */
 function isIn(path1, path2) {
+    path1 = path.resolve(path1);
+    path2 = path.resolve(path2);
+
     return path1 === path2 || pathIsInside(path1, path2) || pathIsInside(path2, path1);
 }
 

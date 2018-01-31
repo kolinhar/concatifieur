@@ -10,14 +10,6 @@ const fctPerso = require("../fctPerso");
 const config = require("../service").config;
 const values = require("../values");
 
-// console.log("on est là:", path.resolve(".", args[2] && args[2].toString() || ""));
-
-/*service.source = "./autre";
-console.log("affectation", service);*/
-
-// console.log("args:", args);
-
-
 const regSrc = /^--src=/g;
 const regDest = /^--dest=/g;
 
