@@ -24,6 +24,7 @@ const posIgnore = posConfig && args.indexOf("ignore");
 const posRemove = posConfig && args.indexOf("disignore");
 const noArgs = args.length === 2;
 const init = args.indexOf("init") !== -1;
+const posInit = args.indexOf("init");
 
 //cmd concatifieur [(...)] --verbose
 if (verboseMODE){
@@ -149,7 +150,32 @@ if (min){
 
 //cmd concatifieur init [--verbose]
 if (init){
+    //SI IL Y A UNE CONFIG ET AUCUN ARGUMENT, ON APPLIQUE LA CONFIG
+    if (!args[posInit + 1] || args[posInit + 1] && args[posInit + 1] === "--verbose"){
+        config.source = fctSystem.getSRC();
+
+        if (config.source === undefined){
+            console.log("Aucun répertoire source n'est configuré.");
+            return;
+        }
+    }
+
+    //SI IL Y A UN ARGUMENT, ON L'APPLIQUE ET ON L'AJOUTE DANS LE FICHIER DE CONFIG
+    if (args[posInit + 1] && args[posInit + 1] !== "--verbose"){
+        const srcPath = path.resolve(args[posInit + 1]);
+
+        if (fs.existsSync(srcPath)){
+            fctSystem.setSRC(srcPath);
+            config.source = srcPath;
+            verboseMODE && console.log("");
+        } else {
+            console.error(`Le répertoire source ${srcPath} n'existe pas.`);
+            return;
+        }
+    }
+
     concatifieur.init(verboseMODE);
+
     return;
 }
 

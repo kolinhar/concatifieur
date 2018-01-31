@@ -98,15 +98,16 @@ function createIndexHTMLFile (indexOrig, pathDest){
  * (SYNC) CRÉÉ UN FICHIER 'index.html' DANS LE RÉPERTOIRE DE TRAVAIL
  */
 function generateIndexHTMLFile(verboseMode) {
+    const src = path.resolve(config.source);
+    const indexFilePath = path.resolve(config.source, "index.html");
 
-    if (fs.existsSync(path.resolve(config.source, "index.html"))){
+    if (fs.existsSync(indexFilePath)){
         verboseMode && console.warn(`Le fichier 'index.html' existe déjà dans le dossier ${config.source}`);
-    }
-    else{
-        if (!fs.existsSync(path.resolve(config.source)))
-            fs.mkdirSync(path.resolve(config.source));
+    } else {
+        if (!fs.existsSync(src))
+            fs.mkdirSync(src);
 
-        fs.writeFileSync(path.resolve(config.source, "index.html"),
+        fs.writeFileSync(indexFilePath,
 `<!DOCTYPE html> 
 <html lang='fr'>
     <head>

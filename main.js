@@ -2,8 +2,8 @@ const fctPerso = require('./fctPerso.js');
 const config = require("./service").config;
 const values = require("./values");
 
-function _init() {
-    fctPerso.generateIndexHTMLFile();
+function _init(verbose) {
+    fctPerso.generateIndexHTMLFile(verbose);
 }
 
 function _min(verbose) {
@@ -66,7 +66,6 @@ function _min(verbose) {
 
     verbose && console.log("fichier index.html terminé.");
 }
-
 
 module.exports.min = _min;
 module.exports.init = _init;
