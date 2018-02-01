@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "mocha -c testing.js",
-    "postinstall": "node ./postInstall.js"
+    "postinstall": "node run ./postInstall.js"
   },
   "author": "RemyJuanes",
   "license": "WTFPL",

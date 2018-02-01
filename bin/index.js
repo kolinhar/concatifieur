@@ -137,6 +137,7 @@ if (min){
 
     config.source = src;
     config.destination = dest;
+    config.ignoredFolders = fctSystem.readConfig().ignoredFolders;
 
     if (!fctSystem.checkConfig({ source: src, destination: dest }))
         return;

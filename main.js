@@ -3,7 +3,11 @@ const config = require("./service").config;
 const values = require("./values");
 
 function _init(verbose) {
+    //CRÉATION DU FICHIER INDEX.HTML
     fctPerso.generateIndexHTMLFile(verbose);
+
+    //CRÉATION D'UN DÉBUT D'ARBORESCENCE DE DOSSIERS
+    fctPerso.createArbo(verbose);
 }
 
 function _min(verbose) {

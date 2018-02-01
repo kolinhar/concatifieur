@@ -8,21 +8,11 @@ const clean_css = require('clean-css');
 const concat = require('gulp-concat');
 const gulp_clean_css = require('gulp-clean-css');
 const babel_core = require("babel-core");
-const service = require("./service").config;
+const values = require("./values");
 const privateMethods = require("./privateMethods");
 const pathIsInside = require("path-is-inside");
 const config = require("./service").config;
 
-const IGNORENAME = ".ignore";
-const REGEXPSPACEBETWEENTAGS = />\s+</gm;
-const REGEXPNEWLINE = /[\r\n]*/gm;
-const REGEXSCRIPTTAG = /<script(.|\r|\n)*?>(.|\r|\n)*?<\/script>/gi;
-const REGEXSCRIPTINLINE = /<script(.|\r|\n)*?>(.|\r|\n)+<\/script>/gi;
-const REGEXSTYLETAG = /(<link(.|\r|\n)*?rel=['"]stylesheet['"](.|\r|\n)*?(\/)*>)|(<style(.|\r|\n)*?>(.|\r|\n)*?<\/style>)/gi;
-const REGEXSTYLEINLINE = /<style(.|\r|\n)*?>(.|\r|\n)+<\/style>/gi;
-const REGEXPINNERCOMMENTTAG = /<!--\s*.*\s*-->/gm;
-const PATHSEPARATOR = path.sep;
-const INDEXFILENAME = "index.html";
 
 /**
  * (SYNC) SUPPRIME UN RÉPERTOIRE MÊME SI IL Y A DES FICHIERS/DOSSIERS À L'INTÉRIEUR DE MANIÈRE RÉCURSIVE
@@ -77,10 +67,10 @@ function createIndexHTMLFile (indexOrig, pathDest){
     let indexOrigFile = fs.readFileSync(indexOrig, "utf8");
 
     //SUPPRESSION DES ESPACES INUTILES ENTRE LES BALISES
-    indexOrigFile = indexOrigFile.replace(REGEXPSPACEBETWEENTAGS, "><");
+    indexOrigFile = indexOrigFile.replace(values.REGEXPSPACEBETWEENTAGS, "><");
 
     //SUPPRESSION DES SAUTS DE LIGNE ET DES RETOUR CHARIOT
-    indexOrigFile = indexOrigFile.replace(REGEXPNEWLINE, "");
+    indexOrigFile = indexOrigFile.replace(values.REGEXPNEWLINE, "");
 
     //SUPRESSION DES BALISES CONCATIFICATION
     indexOrigFile = deleteCommentTag(indexOrigFile, "CONCATIFICATION");
@@ -89,7 +79,7 @@ function createIndexHTMLFile (indexOrig, pathDest){
     indexOrigFile = deleteCommentTag(indexOrigFile, "LASTOC");
 
     //SUPPRESSION DES BALISES DE COMMENTAIRE
-    indexOrigFile = indexOrigFile.replace(REGEXPINNERCOMMENTTAG, "");
+    indexOrigFile = indexOrigFile.replace(values.REGEXPINNERCOMMENTTAG, "");
 
     fs.writeFileSync(pathDest + "/index.html", indexOrigFile);
 }
@@ -102,7 +92,7 @@ function generateIndexHTMLFile(verboseMode) {
     const indexFilePath = path.resolve(config.source, "index.html");
 
     if (fs.existsSync(indexFilePath)){
-        verboseMode && console.warn(`Le fichier 'index.html' existe déjà dans le dossier ${config.source}`);
+        verboseMode && console.warn(`Le fichier 'index.html' existe déjà dans le dossier ${config.source}.`);
     } else {
         if (!fs.existsSync(src))
             fs.mkdirSync(src);
@@ -123,8 +113,22 @@ function generateIndexHTMLFile(verboseMode) {
     </body>
 </html>`, "utf8");
 
-        verboseMode && console.log(`Fichier 'index.html' créé dans le dossier ${config.source}`);
+        verboseMode && console.log(`Fichier 'index.html' créé.`);
     }
+}
+
+function createArbo(verboseMode) {
+    const src = path.resolve(config.source);
+    const foldersToCreate = ['scripts', 'styles', 'media', 'fonts', 'views'];
+
+    foldersToCreate.forEach(x =>{
+        if (!fs.existsSync(path.resolve(src, x))){
+            fs.mkdirSync(path.resolve(src, x));
+            verboseMode && console.log(`Dossier '${x}' créé.`);
+        } else {
+            console.log(`Le dossier '${x}' existe déjà.`);
+        }
+    });
 }
 
 /**
@@ -218,13 +222,9 @@ function duplicateFolder(origPath, destPath) {
     destPath = path.resolve(destPath);
     const destPathOrig = path.resolve(destPath);
 
-    //console.log(origPath, destPath);
-
-    //console.log(path.relative(destPath, origPath));
-
     path.relative(destPath, origPath)
-        .replace(`..${PATHSEPARATOR}src`, "")
-        .split(PATHSEPARATOR)
+        .replace(`..${values.PATHSEPARATOR}src`, "")
+        .split(values.PATHSEPARATOR)
         .filter(function (val) {
             return val !== "";
         })
@@ -239,17 +239,17 @@ function duplicateFolder(origPath, destPath) {
     if (isDuplicableFolder(origPath)){
         fs.readdirSync(origPath)
             .forEach(function (val) {
-                const newPathOrig = origPath + PATHSEPARATOR + val;
+                const newPathOrig = origPath + values.PATHSEPARATOR + val;
 
                 if (fs.statSync(newPathOrig).isFile()){
                     try {
-                        if (val !== INDEXFILENAME && val !== IGNORENAME){
+                        if (val !== values.INDEXFILENAME){
                             //COPIE DES FICHIERS
-                            fs.linkSync(newPathOrig, destPath + PATHSEPARATOR + val);
+                            fs.linkSync(newPathOrig, destPath + values.PATHSEPARATOR + val);
                         }
                     } catch (e) {
                         if (e.code === "EEXIST")
-                            console.warn("le fichier " + destPath + PATHSEPARATOR + val + " existe déjà.");
+                            console.warn("le fichier " + destPath + values.PATHSEPARATOR + val + " existe déjà.");
                         else
                             console.warn("Erreur", e);
                     }
@@ -262,12 +262,14 @@ function duplicateFolder(origPath, destPath) {
 }
 
 /**
- * (SYNC) VÉRIFIE SI LE RÉPERTOIRE EST À PRENDRE EN COMPTE, C'EST À DIRE QU'IL NE DOIT PAS CONTENIR UN FICHIER .'ignore'
+ * (SYNC) VÉRIFIE SI LE RÉPERTOIRE EST À PRENDRE EN COMPTE, C'EST À DIRE QU'IL NE DOIT PAS APPARAITRE DANS LES DOSSIERS À IGNORER DE LA CONFIGURATION
  * @param {string} folderPath - répertoire à tester
  * @returns {boolean}
  */
 function isDuplicableFolder(folderPath){
-    return !fs.existsSync(path.resolve(folderPath, IGNORENAME));
+    const folderPathTemp = path.resolve(folderPath);
+
+    return !config.ignoredFolders || config.ignoredFolders.length === 0 || config.ignoredFolders.every(x => x !== folderPathTemp);
 }
 
 /**
@@ -290,13 +292,13 @@ function innerTag(regex, filePath){
             l_styleTab = [];
 
         concatArr.forEach(function (val, ind, arr) {
-            const l_scripts = val.match(REGEXSCRIPTTAG),
-                l_styles = val.match(REGEXSTYLETAG);
+            const l_scripts = val.match(values.REGEXSCRIPTTAG),
+                l_styles = val.match(values.REGEXSTYLETAG);
 
             if (l_scripts !== null){
                 l_scripts.forEach(function (v, i) {
                     let l_path = privateMethods.extractScriptPath(v) || null,
-                        l_content = v.match(REGEXSCRIPTINLINE);
+                        l_content = v.match(values.REGEXSCRIPTINLINE);
 
                     /**
                     * SI IL Y A UN CONTENU INLINE, ON CRÉÉE UN FICHIER TEMPORAIRE DANS LEQUEL ON MET LE CODE
@@ -309,7 +311,7 @@ function innerTag(regex, filePath){
                         if(!fs.existsSync(l_path))
                             fs.mkdirSync(l_path);
 
-                        l_path += `${PATHSEPARATOR}script${i}.js`;
+                        l_path += `${values.PATHSEPARATOR}script${i}.js`;
                         fs.writeFileSync(l_path, l_content[0].replace(/^<script(.|\r|\n)*?>/gi, "").replace(/<\/script>$/gi, ""));
                     }
 
@@ -325,7 +327,7 @@ function innerTag(regex, filePath){
             if (l_styles !== null){
                 l_styles.forEach(function (v, i) {
                     let l_path = privateMethods.extractStylePath(v) || null,
-                        l_content = v.match(REGEXSTYLEINLINE);
+                        l_content = v.match(values.REGEXSTYLEINLINE);
 
                     /**
                      * SI IL Y A UN CONTENU INLINE, ON CRÉÉE UN FICHIER TEMPORAIRE DANS LEQUEL ON MET LE CODE
@@ -339,7 +341,7 @@ function innerTag(regex, filePath){
                             fs.mkdirSync(l_path);
                         }
 
-                        l_path += `${PATHSEPARATOR}style${i}.css`;
+                        l_path += `${values.PATHSEPARATOR}style${i}.css`;
                         fs.writeFileSync(l_path, l_content[0].replace(/^<style(.|\r|\n)*?>/gi, "").replace(/<\/style>$/gi, ""));
                     }
 
@@ -543,7 +545,7 @@ function concatiFicationJS(arr, suffix) {
                             return path.resolve(config.source, v.chemin)
                         })),
                         concat(JSfileName),
-                        gulp.dest(`${config.destination}${PATHSEPARATOR}JS`)
+                        gulp.dest(`${config.destination}${values.PATHSEPARATOR}JS`)
                     ],
                     function (err) {
                         if (err){
@@ -551,7 +553,7 @@ function concatiFicationJS(arr, suffix) {
                             return;
                         }
 
-                        babel_core.transformFile(`${config.destination}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, {
+                        babel_core.transformFile(`${config.destination}${values.PATHSEPARATOR}JS${values.PATHSEPARATOR}${JSfileName}`, {
                             presets: ["es2015"],
                             compact: true,
                             comments: false,
@@ -562,7 +564,7 @@ function concatiFicationJS(arr, suffix) {
                                 return;
                             }
 
-                            fs.writeFileSync(`${config.destination}${PATHSEPARATOR}JS${PATHSEPARATOR}${JSfileName}`, result.code);
+                            fs.writeFileSync(`${config.destination}${values.PATHSEPARATOR}JS${values.PATHSEPARATOR}${JSfileName}`, result.code);
 
                             console.log(`fin de traitement du script ${JSfileName}`);
                             cptArr--;
@@ -678,6 +680,7 @@ module.exports.getScriptsPath = getScriptsPath;
 module.exports.getStylesPath = getStylesPath;
 module.exports.duplicateFolder = duplicateFolder;
 module.exports.generateIndexHTMLFile = generateIndexHTMLFile;
+module.exports.createArbo = createArbo;
 module.exports.getExtScript = getExtScript;
 module.exports.groupFiles = groupFiles;
 module.exports.concatiFicationJS = concatiFicationJS;
