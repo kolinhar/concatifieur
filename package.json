@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "mocha -c testing.js",
-    "dev": "gulp concatification"
+    "postinstall": "node ./postInstall.js"
   },
   "author": "RemyJuanes",
   "license": "WTFPL",
