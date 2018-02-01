@@ -118,7 +118,7 @@ if (posConfig !== -1){
     }
 
     if (verboseMODE){
-        console.log("Configuration:\n", fctSystem._readConfig());
+        console.log("Configuration:\n", fctSystem.readConfig());
     }
 }
 
@@ -181,7 +181,7 @@ if (init){
 
 //cmd concatifieur -v/--version
 if (versionMODE || noArgs){
-    console.log("v" + fctSystem.getVersion());
+    console.log("v" + fctSystem.getVersion(), "\n");
 }
 
 //cmd concatifieur -h/--help

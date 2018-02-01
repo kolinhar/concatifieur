@@ -2,8 +2,7 @@
  * Created by PRJS12821 on 13/11/2017.
  */
 "use strict";
-
-const REGEXPSTRINGINSTRING = /["|'].*?["|']/;
+const values = require("./values");
 
 /**
  * RETURN TRUE SI LE CHEMIN N'EST PAS UN LIEN VERS LE WEB
@@ -24,7 +23,7 @@ function extractScriptPath(strTag){
 
     if (!!src && strTag.indexOf("<script") === 0) {
         return src[0]
-            .match(REGEXPSTRINGINSTRING)[0]
+            .match(values.REGEXPSTRINGINSTRING)[0]
             .replace(/["']/g, "");
     }
     return "";
@@ -40,7 +39,7 @@ function extractStylePath (strTag) {
 
     if (!!href && strTag.indexOf("<link") === 0 && strTag.match(/rel=["']stylesheet["']/i) !== null) {
         return href[0]
-            .match(REGEXPSTRINGINSTRING)[0]
+            .match(values.REGEXPSTRINGINSTRING)[0]
             .replace(/["']/g, "");
     }
     return "";

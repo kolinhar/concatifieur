@@ -278,19 +278,12 @@ describe("fonctionSystem", function () {
 
     describe("_readConfig", function () {
         it("lecture par défaut", function () {
-            assert.equal(JSON.stringify({"source":"./src","destination":"./dist"}), JSON.stringify(fonctionSystem._readConfig()));
+            assert.equal(JSON.stringify({"source":"./src","destination":"./dist"}), JSON.stringify(fonctionSystem.readConfig()));
         });
 
         it("lecture avec paramètres", function () {
             fonctionSystem._setConfig({source: "youhou", destination: "perdu"});
-            assert.equal(JSON.stringify({"source":"youhou","destination":"perdu"}), JSON.stringify(fonctionSystem._readConfig()));
-        });
-
-        it("lecture sans paramètre: enregistrement des valeurs du service", function () {
-            service.source = "ici";
-            service.destination = "là-bas";
-            fonctionSystem._setConfig();
-            assert.equal(JSON.stringify({"source":"ici","destination":"là-bas"}), JSON.stringify(fonctionSystem._readConfig()));
+            assert.equal(JSON.stringify({"source":"youhou","destination":"perdu"}), JSON.stringify(fonctionSystem.readConfig()));
         });
     });
 });

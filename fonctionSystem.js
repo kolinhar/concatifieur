@@ -240,8 +240,8 @@ module.exports.getDIST = _getDIST;
 module.exports.addFolder = _addFolder;
 module.exports.removeFolder = _removeFolder;
 module.exports.checkConfig = _checkConfig;
+module.exports.readConfig = _readConfig;
 
 //POUR LES TESTS
-module.exports._readConfig = _readConfig;
 module.exports._setConfig = _setConfig;
 module.exports._createConfigFile = _createConfigFile;
