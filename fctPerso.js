@@ -161,8 +161,14 @@ function insertStyle (styleObj, dest, filePath) {
 
         }
         else{
-            html = html.replace(`</${tagInsert}>`,
-                `<link rel="stylesheet" href="${normalizePath(styleObj.chemin)}"${props} /></${tagInsert}>`);
+            if (styleObj.isMovable){
+                html = html.replace(`</${tagInsert}>`,
+                    `<link rel="stylesheet" href="${normalizePath(path.resolve(config.destination, "CSS", styleObj.chemin).split(config.destination)[1].replace(/\\/g, "/"))}"${props} /></${tagInsert}>`);
+            }
+            else{
+                html = html.replace(`</${tagInsert}>`,
+                    `<link rel="stylesheet" href="${styleObj.chemin}"${props} /></${tagInsert}>`);
+            }
 
             fs.writeFileSync(filePath, html, "utf8");
         }
@@ -194,7 +200,12 @@ function insertScript(scriptObj, dest, filePath){
     }
 
     if (scriptObj.chemin !== null){
-        l_path = ` src="${normalizePath(scriptObj.chemin)}"`;
+        if (scriptObj.isMovable){
+            l_path = ` src="${normalizePath(path.resolve(config.destination, "JS", scriptObj.chemin).split(config.destination)[1].replace(/\\/g, "/"))}"`;
+        }
+        else{
+            l_path = ` src="${scriptObj.chemin}"`;
+        }
     }
 
     if (scriptObj.content !== null){
