@@ -117,6 +117,10 @@ function generateIndexHTMLFile(verboseMode) {
     }
 }
 
+/**
+ * CRÉE UNE ARBORESCENCE DE PROJET MINIMALISTE
+ * @param verboseMode
+ */
 function createArbo(verboseMode) {
     const src = path.resolve(config.source);
     const foldersToCreate = ['scripts', 'styles', 'media', 'fonts', 'views'];
@@ -234,7 +238,7 @@ function duplicateFolder(origPath, destPath) {
     const destPathOrig = path.resolve(destPath);
 
     path.relative(destPath, origPath)
-        .replace(`..${values.PATHSEPARATOR}src`, "")
+        .replace(`..${values.PATHSEPARATOR}${path.parse(config.source).base}`, "")
         .split(values.PATHSEPARATOR)
         .filter(function (val) {
             return val !== "";
