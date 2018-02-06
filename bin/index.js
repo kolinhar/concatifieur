@@ -128,22 +128,24 @@ if (min){
     let dest = fctSystem.getDIST();
 
     //SI LA SOURCE EST PASSÉE EN PARAMÈTRE
-    if (args[posMin + 1] && args[posMin + 1] !== "--verbose")
+    if (args[posMin + 1] && args[posMin + 1] !== "--verbose") {
         src = path.resolve(args[posMin + 1]);
+    }
 
     //SI LA DESTINATION EST PASSÉE EN PARAMÈTRE
-    if (args[posMin + 2] && args[posMin + 2] !== "--verbose")
+    if (args[posMin + 2] && args[posMin + 2] !== "--verbose") {
         dest = path.resolve(args[posMin + 2]);
+    }
 
     config.source = src;
     config.destination = dest;
     config.ignoredFolders = fctSystem.readConfig().ignoredFolders;
 
-    if (!fctSystem.checkConfig({ source: src, destination: dest }))
+    if (!fctSystem.checkConfig({ source: config.source, destination: config.destination }))
         return;
 
-    verboseMODE && console.log("répertoire source à traiter:", src);
-    verboseMODE && console.log("répertoire de destination:", dest, "\n");
+    verboseMODE && console.log("\nrépertoire source à traiter:", config.source);
+    verboseMODE && console.log("\nrépertoire de destination:", config.destination, "\n");
 
     concatifieur.min(verboseMODE);
     return;

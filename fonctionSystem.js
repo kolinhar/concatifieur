@@ -133,13 +133,7 @@ function _removeFolder(chemin) {
 function _readConfig() {
     _createConfigFile();
 
-    const configFile = JSON.parse(fs.readFileSync(filePathConfig));
-
-    for (let prop in configFile) {
-        config[prop] = configFile[prop];
-    }
-
-    return configFile;
+    return JSON.parse(fs.readFileSync(filePathConfig));
 }
 
 /**
