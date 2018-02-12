@@ -307,6 +307,9 @@ function innerTag(regex, filePath){
             l_styleTab = [];
 
         concatArr.forEach(function (val, ind, arr) {
+            //NE PAS TENIR COMPTE DES SCRIPTS ET STYLES COMMENTÉS
+            val = val.replace(values.REGEXPCOMMENTEDTAG, "");
+
             const l_scripts = val.match(values.REGEXSCRIPTTAG),
                 l_styles = val.match(values.REGEXSTYLETAG);
 
@@ -542,7 +545,6 @@ function concatiFicationJS(arr, suffix) {
 
                 final_JS_in_DOM.push(val[0]);
 
-                // console.log(`fin de traitement du script inline`);
                 cptArr--;
                 deleteTemp(cptArr, `TempJS${(suffix ? "-lastoc":"")}`);
             }
@@ -620,7 +622,6 @@ function concatiFicationCSS(arr, suffix) {
                     val[0].content = new clean_css({compatibility: "ie8"}).minify(val[0].content).styles;
 
                     final_CSS_in_DOM.push(val[0]);
-                    // console.log("fin de traitement du style inline");
                     cptArr--;
                     deleteTemp(cptArr, `TempCSS${(suffix ? "-lastoc":"")}`);
 

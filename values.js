@@ -13,6 +13,7 @@ const REGEXSCRIPTINLINE = /<script(.|\r|\n)*?>(.|\r|\n)+<\/script>/gi;
 const REGEXSTYLETAG = /(<link(.|\r|\n)*?rel=['"]stylesheet['"](.|\r|\n)*?(\/)*>)|(<style(.|\r|\n)*?>(.|\r|\n)*?<\/style>)/gi;
 const REGEXSTYLEINLINE = /<style(.|\r|\n)*?>(.|\r|\n)+<\/style>/gi;
 const REGEXPINNERCOMMENTTAG = /<!--\s*.*\s*-->/gm;
+const REGEXPCOMMENTEDTAG = /<!--\s*<(script|style|link)(.|\s)*?\/?>(.|\s)*?(<\/(script|style)>)?\s*-->/gmi;
 const PATHSEPARATOR = require("path").sep;
 const INDEXFILENAME = "index.html";
 
@@ -27,5 +28,6 @@ module.exports.REGEXSCRIPTINLINE = REGEXSCRIPTINLINE;
 module.exports.REGEXSTYLETAG = REGEXSTYLETAG;
 module.exports.REGEXSTYLEINLINE = REGEXSTYLEINLINE;
 module.exports.REGEXPINNERCOMMENTTAG = REGEXPINNERCOMMENTTAG;
+module.exports.REGEXPCOMMENTEDTAG = REGEXPCOMMENTEDTAG;
 module.exports.PATHSEPARATOR = PATHSEPARATOR;
 module.exports.INDEXFILENAME = INDEXFILENAME;
